@@ -15,6 +15,7 @@
 ✅ **Video support** (auto-play on hover)  
 ✅ **Lazy loading** for fast performance  
 ✅ **Touch swipe** support on mobile  
+✅ **Admin Dashboard** to manage photos and titles  
 
 ---
 
@@ -202,6 +203,15 @@ If stuck:
 1. Push to GitHub
 2. Deploy on Vercel
 3. Share with world! 🌍
+
+---
+
+## 🛠️ **Admin Dashboard**
+Manage your portfolio without code:
+1.  Open **`admin.html`** in your browser.
+2.  Login with: `ProVenture2025`
+3.  Sync photos, edit titles/tags, and click **Save Changes**.
+4.  Read `admin_dashboard_setup.md` for backend setup.
 
 ---
 

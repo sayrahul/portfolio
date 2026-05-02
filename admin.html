@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProVenture | Admin Dashboard</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body class="admin-body">
+
+  <!-- ========== LOGIN OVERLAY ========== -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-card">
+      <img src="assets/logo2.png" alt="ProVenture" class="login-logo" />
+      <h2>Admin Access</h2>
+      <p>Enter password to manage your portfolio</p>
+      <div class="input-group">
+        <input type="password" id="adminPassword" placeholder="Password" />
+        <button id="loginBtn" class="btn-primary magnetic">Login</button>
+      </div>
+      <p id="loginError" class="error-text"></p>
+    </div>
+  </div>
+
+  <!-- ========== DASHBOARD LAYOUT ========== -->
+  <div class="dashboard-container" id="dashboardUI" style="display: none;">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <img src="assets/logo2.png" alt="ProVenture" />
+        <span class="logo-text">ProVenture</span>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="projects">
+          <i class="fa-solid fa-grid-2"></i>
+          <span>Projects</span>
+        </button>
+        <button class="nav-item" data-tab="settings">
+          <i class="fa-solid fa-gear"></i>
+          <span>Settings</span>
+        </button>
+        <button class="nav-item" data-tab="analytics">
+          <i class="fa-solid fa-chart-line"></i>
+          <span>Analytics</span>
+        </button>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <button id="logoutBtn" class="logout-btn">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          <span>Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="main-header">
+        <div class="header-info">
+          <h1>Project Management</h1>
+          <p>Manage your images, titles, and tags</p>
+        </div>
+        <div class="header-actions">
+          <button id="syncBtn" class="btn-secondary">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            Sync Photos
+          </button>
+          <button id="saveAllBtn" class="btn-primary">
+            <i class="fa-solid fa-floppy-disk"></i>
+            Save Changes
+          </button>
+        </div>
+      </header>
+
+      <!-- Projects Tab -->
+      <section id="projectsTab" class="tab-content active">
+        <div class="search-filter-bar">
+          <div class="search-box">
+            <i class="fa-solid fa-search"></i>
+            <input type="text" id="adminSearch" placeholder="Filter projects..." />
+          </div>
+          <div class="category-filter">
+            <select id="categoryFilter">
+              <option value="all">All Categories</option>
+              <option value="branding">Branding</option>
+              <option value="video">Video</option>
+              <option value="web">Web Design</option>
+              <option value="photo">Photography</option>
+              <option value="social">Social Media</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="admin-grid" id="adminGrid">
+          <!-- Project cards injected by JS -->
+          <div class="loading-state">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            <p>Fetching your portfolio...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings Tab -->
+      <section id="settingsTab" class="tab-content">
+        <div class="settings-card">
+          <h2>General Settings</h2>
+          <div class="settings-group">
+            <label>Google Photos Album URL</label>
+            <input type="text" id="albumUrlInput" placeholder="Paste link here..." />
+            <p class="help-text">The album link from where images are fetched automatically.</p>
+          </div>
+          <div class="settings-group">
+            <label>Portfolio Title</label>
+            <input type="text" id="portfolioTitleInput" value="ProVenture Portfolio" />
+          </div>
+          <button class="btn-primary">Update Settings</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Notification -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Scripts -->
+  <script src="js/apps-script-loader.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

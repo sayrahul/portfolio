@@ -1,6 +1,20 @@
 // ========================================
-// PROVENTURE PORTFOLIO - INSTAGRAM STYLE
+// PROVENTURE PORTFOLIO - PREMIUM VERSION
 // ========================================
+
+// ========== SMOOTH SCROLL (LENIS) ==========
+const lenis = new Lenis({
+  duration: 1.2,
+  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+  smoothWheel: true
+});
+
+function raf(time) {
+  lenis.raf(time);
+  requestAnimationFrame(raf);
+}
+
+requestAnimationFrame(raf);
 
 // ========== THEME TOGGLE ==========
 const themeToggle = document.getElementById('themeToggle');
@@ -129,10 +143,17 @@ function renderPortfolio() {
   
   // Show/hide load more button
   const loadMoreBtn = document.getElementById('loadMoreBtn');
-  if (displayedItems >= filteredProjects.length) {
-    loadMoreBtn.style.display = 'none';
-  } else {
-    loadMoreBtn.style.display = 'inline-flex';
+  if (loadMoreBtn) {
+    if (displayedItems >= filteredProjects.length) {
+      loadMoreBtn.style.display = 'none';
+    } else {
+      loadMoreBtn.style.display = 'inline-flex';
+    }
+  }
+
+  // RE-INITIALIZE ANIMATIONS AND LAZY LOADING
+  if (typeof observeElements === 'function') {
+    observeElements();
   }
 }
 
@@ -241,8 +262,85 @@ function handleSwipe() {
   if (touchEndX > touchStartX + 50) prevLightbox();
 }
 
-// ========== LAZY LOADING ==========
-if ('IntersectionObserver' in window) {
+// ========== PREMIUM ANIMATIONS ==========
+
+// 0. Custom Cursor
+const cursorDot = document.querySelector('.cursor-dot');
+const cursorOutline = document.querySelector('.cursor-outline');
+
+window.addEventListener('mousemove', (e) => {
+  const posX = e.clientX;
+  const posY = e.clientY;
+
+  cursorDot.style.left = `${posX}px`;
+  cursorDot.style.top = `${posY}px`;
+
+  // Outline with slight lag
+  cursorOutline.animate({
+    left: `${posX}px`,
+    top: `${posY}px`
+  }, { duration: 500, fill: "forwards" });
+});
+
+// Cursor Hover Effects
+const hoverables = document.querySelectorAll('a, button, .portfolio-item, .category-btn');
+hoverables.forEach(el => {
+  el.addEventListener('mouseenter', () => cursorOutline.classList.add('cursor-hover'));
+  el.addEventListener('mouseleave', () => cursorOutline.classList.remove('cursor-hover'));
+});
+
+// 1. Magnetic Buttons
+const magneticElements = document.querySelectorAll('.magnetic');
+
+magneticElements.forEach((el) => {
+  el.addEventListener('mousemove', (e) => {
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    
+    el.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+  });
+  
+  el.addEventListener('mouseleave', () => {
+    el.style.transform = 'translate(0px, 0px)';
+  });
+});
+
+// 2. Parallax Logo & Grid Tilt
+const parallaxLogo = document.getElementById('parallaxLogo');
+
+document.addEventListener('mousemove', (e) => {
+  const x = (window.innerWidth / 2 - e.pageX) / 30;
+  const y = (window.innerHeight / 2 - e.pageY) / 30;
+  
+  if (parallaxLogo) {
+    parallaxLogo.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
+  }
+  
+  // Subtle tilt for grid items near cursor
+  const items = document.querySelectorAll('.portfolio-item:hover');
+  items.forEach(item => {
+    const rect = item.getBoundingClientRect();
+    const ix = (rect.left + rect.width / 2 - e.clientX) / 10;
+    const iy = (rect.top + rect.height / 2 - e.clientY) / 10;
+    item.querySelector('.item-overlay').style.background = `radial-gradient(circle at ${e.clientX - rect.left}px ${e.clientY - rect.top}px, rgba(255,255,255,0.1) 0%, transparent 80%)`;
+    item.style.transform = `perspective(1000px) rotateY(${-ix}deg) rotateX(${iy}deg) scale(1.02)`;
+  });
+});
+
+// 3. Scroll Reveal Observer
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('revealed');
+    }
+  });
+}, { threshold: 0.1 });
+
+// ========== LAZY LOADING & REVEAL ==========
+
+// Define observeElements globally so renderPortfolio can call it
+function observeElements() {
   const imageObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -255,16 +353,19 @@ if ('IntersectionObserver' in window) {
       }
     });
   });
+
+  document.querySelectorAll('img[loading="lazy"]').forEach(img => {
+    imageObserver.observe(img);
+  });
   
-  // Observe images after render
-  const observeImages = () => {
-    document.querySelectorAll('img[data-src]').forEach(img => {
-      imageObserver.observe(img);
-    });
-  };
-  
-  // Call after portfolio renders
-  setTimeout(observeImages, 100);
+  document.querySelectorAll('.portfolio-item').forEach(item => {
+    revealObserver.observe(item);
+  });
+}
+
+if ('IntersectionObserver' in window) {
+  // Initial call
+  setTimeout(observeElements, 100);
 }
 
 // ========== SMOOTH SCROLL ==========

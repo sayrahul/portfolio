@@ -9,15 +9,21 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
   
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   
   <!-- CSS -->
   <link rel="stylesheet" href="css/style.css" />
+  
+  <!-- Smooth Scroll (Lenis) -->
+  <link rel="stylesheet" href="https://unpkg.com/lenis@1.1.13/dist/lenis.css" />
 </head>
-<body>
+<body class="studio-cursor">
+  <!-- Custom Cursor -->
+  <div class="cursor-dot"></div>
+  <div class="cursor-outline"></div>
 
   <!-- ========== HEADER ========== -->
   <header class="header">
@@ -26,6 +32,7 @@
         <!-- Logo -->
         <div class="logo">
           <img src="assets/logo2.png" alt="ProVenture" />
+          <span class="logo-text">ProVenture</span>
         </div>
         
         <!-- Search (optional) -->
@@ -55,15 +62,18 @@
     <div class="container">
       <div class="profile-content">
         <!-- Profile Image -->
-        <div class="profile-image">
-          <img src="assets/logo.png" alt="ProVenture" />
+        <div class="profile-image-container">
+          <div class="profile-image" id="parallaxLogo">
+            <img src="assets/logo.png" alt="ProVenture" />
+          </div>
+          <div class="profile-glow"></div>
         </div>
         
         <!-- Profile Info -->
         <div class="profile-info">
           <div class="profile-header">
-            <h1>ProVenture</h1>
-            <a href="https://proventure.in" class="btn-primary">Visit Website</a>
+            <h1 class="reveal-text">ProVenture</h1>
+            <a href="https://proventure.in" class="btn-primary magnetic">Visit Website</a>
           </div>
           
           <!-- Stats -->
@@ -229,6 +239,7 @@
   </footer>
 
   <!-- Scripts -->
+  <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
   <script src="data/projects.js"></script>
   <script src="js/apps-script-loader.js"></script>
   <script src="js/main.js"></script>
