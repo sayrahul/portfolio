@@ -55,7 +55,6 @@ export default function AdminDashboard() {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Web Design');
   const [subcategory, setSubcategory] = useState('');
-  const [description, setDescription] = useState('');
   const [selectedTools, setSelectedTools] = useState([]);
   const [customToolInput, setCustomToolInput] = useState('');
   
@@ -165,7 +164,6 @@ export default function AdminDashboard() {
     setTitle(project.title);
     setCategory(project.category);
     setSubcategory(project.subcategory);
-    setDescription(project.details || project.shortDescription || '');
     setSelectedTools(project.tools || []);
     setThumbnail(project.thumbnail || '');
     
@@ -183,12 +181,27 @@ export default function AdminDashboard() {
     }
   };
 
+  // Auto-edit project when redirected from main page Edit click
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    
+    const editId = sessionStorage.getItem('portfolio_edit_project_id');
+    if (editId) {
+      const projectToEdit = projectsList.find(p => p.id === editId);
+      if (projectToEdit) {
+        setTimeout(() => {
+          handleEditClick(projectToEdit);
+        }, 100);
+      }
+      sessionStorage.removeItem('portfolio_edit_project_id');
+    }
+  }, [isLoggedIn, projectsList]);
+
   // Cancel Editing
   const handleCancelEdit = () => {
     setEditingProjectId(null);
     setTitle('');
     setSubcategory('');
-    setDescription('');
     setSelectedTools([]);
     setThumbnail('');
     setLiveUrl('');
@@ -201,7 +214,7 @@ export default function AdminDashboard() {
   // Add or Update Project
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    if (!title || !subcategory || !description) {
+    if (!title || !subcategory) {
       alert("Please fill out all required fields.");
       return;
     }
@@ -210,13 +223,11 @@ export default function AdminDashboard() {
     if (category === 'Graphic Design') iconType = 'design';
     else if (category === 'Video Editing') iconType = 'video';
 
-    // Map unified description to both card shortDescription and modal details
+    // Map unified properties
     const projectData = {
       title,
       category,
       subcategory,
-      shortDescription: description,
-      details: description,
       tools: selectedTools,
       iconType,
       thumbnail: thumbnail || 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800'
@@ -263,7 +274,6 @@ export default function AdminDashboard() {
     // Clear form fields
     setTitle('');
     setSubcategory('');
-    setDescription('');
     setSelectedTools([]);
     setThumbnail('');
     setLiveUrl('');
@@ -302,6 +312,8 @@ export default function AdminDashboard() {
   if (!isLoggedIn) {
     return (
       <div className="admin-lock-screen-wrapper">
+        <div className="glowing-orb orb-1"></div>
+        <div className="glowing-orb orb-2"></div>
         <a href="#work" className="lock-back-link">
           <ArrowLeft size={14} /> Back to Site
         </a>
@@ -380,9 +392,9 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="admin-grid container">
+      <div className="admin-grid container centered-admin-grid">
         
-        {/* Left Column: Form Builder */}
+        {/* Centered Form Builder */}
         <div className="admin-form-column">
           {successMsg && (
             <div className="alert alert-success fade-in">
@@ -482,17 +494,7 @@ export default function AdminDashboard() {
                 />
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Project Description *</label>
-                <textarea 
-                  value={description} 
-                  onChange={e => setDescription(e.target.value)} 
-                  placeholder="Describe your project, tools used, highlights..."
-                  rows="4"
-                  className="form-input form-textarea"
-                  required
-                />
-              </div>
+
 
               {/* Tools Multi-Select Checkboxes Grid */}
               <div className="form-group border-top-form">
@@ -682,54 +684,6 @@ export default function AdminDashboard() {
             </form>
           </div>
         </div>
-
-        {/* Right Column: Database Project Catalog Manager */}
-        <div className="admin-sidebar-column">
-          
-          <div className="admin-manage-card card">
-            <h3 className="admin-card-title">Manage Projects ({projectsList.length})</h3>
-            <p className="admin-card-desc">
-              Edit descriptions, update visual assets, modify tags, or delete outdated projects.
-            </p>
-            {projectsList.length === 0 ? (
-              <div className="no-sandbox-msg">
-                <AlertCircle size={28} className="placeholder-icon" />
-                <p>All projects have been deleted. Restore defaults or add new projects.</p>
-              </div>
-            ) : (
-              <div className="sandbox-items-list">
-                {projectsList.map(proj => (
-                  <div key={proj.id} className="sandbox-item-row">
-                    <img src={proj.thumbnail} alt={proj.title} className="sandbox-item-thumb" />
-                    <div className="sandbox-item-info">
-                      <span className="sandbox-item-title">{proj.title}</span>
-                      <span className="sandbox-item-cat">{proj.category} &bull; {proj.subcategory}</span>
-                    </div>
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      <button 
-                        onClick={() => handleEditClick(proj)} 
-                        className="sandbox-delete-btn"
-                        style={{ color: 'var(--text-secondary)' }}
-                        title="Edit project"
-                      >
-                        <Pencil size={14} />
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteProject(proj.id)} 
-                        className="sandbox-delete-btn"
-                        title="Delete project"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-        </div>
-
       </div>
     </div>
   );

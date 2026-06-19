@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ExternalLink, Film, Paintbrush, Monitor, Eye, Search } from 'lucide-react';
+import { X, ExternalLink, Film, Paintbrush, Monitor, Eye, Search, Pencil, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
@@ -32,6 +32,13 @@ export default function PortfolioGrid() {
   const [searchTerm, setSearchTerm] = useState("");
   const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Sync admin state on mount
+  useEffect(() => {
+    const loggedIn = sessionStorage.getItem('portfolio_admin_logged_in') === 'true';
+    setIsAdmin(loggedIn);
+  }, []);
 
   // Reset pagination count and sub-filters when major filters or search changes
   useEffect(() => {
@@ -54,10 +61,9 @@ export default function PortfolioGrid() {
   // 1. Get dynamically filtered list of projects
   const getFilteredProjects = () => {
     return projectsList.filter(project => {
-      // Search match
+      // Search match (name, subcategory, tools)
       const matchesSearch = 
         project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.shortDescription.toLowerCase().includes(searchTerm.toLowerCase()) ||
         project.subcategory.toLowerCase().includes(searchTerm.toLowerCase()) ||
         project.tools.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -78,7 +84,6 @@ export default function PortfolioGrid() {
     return projectsList.filter(project => {
       const matchesSearch = 
         project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.shortDescription.toLowerCase().includes(searchTerm.toLowerCase()) ||
         project.subcategory.toLowerCase().includes(searchTerm.toLowerCase()) ||
         project.tools.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()));
       
@@ -93,7 +98,7 @@ export default function PortfolioGrid() {
     
     const matches = projectsList.filter(p => p.category === activeFilter && (
       p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.shortDescription.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.subcategory.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.tools.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()))
     ));
     
@@ -121,6 +126,21 @@ export default function PortfolioGrid() {
     if (e) e.stopPropagation();
     setSearchTerm(tag);
     closeProject();
+  };
+
+  const handleDeleteProject = (id, e) => {
+    if (e) e.stopPropagation();
+    if (window.confirm("Are you sure you want to delete this project?")) {
+      const updated = projectsList.filter(p => p.id !== id);
+      setProjectsList(updated);
+      localStorage.setItem('portfolio_projects_db', JSON.stringify(updated));
+    }
+  };
+
+  const handleEditProject = (id, e) => {
+    if (e) e.stopPropagation();
+    sessionStorage.setItem('portfolio_edit_project_id', id);
+    window.location.hash = '#/admin';
   };
 
   const displayedProjects = filteredProjects.slice(0, visibleCount);
@@ -218,10 +238,29 @@ export default function PortfolioGrid() {
                       <span>{project.subcategory}</span>
                     </div>
 
+                    {/* Admin Edit/Delete Controls */}
+                    {isAdmin && (
+                      <div className="admin-card-controls">
+                        <button 
+                          className="admin-card-btn edit-btn" 
+                          onClick={(e) => handleEditProject(project.id, e)}
+                          title="Edit Project"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button 
+                          className="admin-card-btn delete-btn" 
+                          onClick={(e) => handleDeleteProject(project.id, e)}
+                          title="Delete Project"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    )}
+
                     {/* INTERACTIVE HOVER OVERLAY */}
                     <div className="project-card-overlay">
                       <div className="overlay-content">
-                        <p className="overlay-desc">{project.shortDescription}</p>
                         <div className="overlay-tools-list">
                           {project.tools.slice(0, 3).map((tool, index) => (
                             <span 
@@ -331,7 +370,6 @@ export default function PortfolioGrid() {
               <div className="modal-info-container">
                 <span className="badge modal-badge">{selectedProject.subcategory}</span>
                 <h2 className="modal-project-title">{selectedProject.title}</h2>
-                <p className="modal-project-details">{selectedProject.details}</p>
 
                 <div className="modal-tools-section">
                   <h4 className="tools-title">Tools & Frameworks</h4>
