@@ -57,7 +57,8 @@ export default function AdminDashboard() {
   const [category, setCategory] = useState('Web Design');
   const [subcategory, setSubcategory] = useState('');
   const [selectedTools, setSelectedTools] = useState([]);
-  const [customToolInput, setCustomToolInput] = useState('');
+  const [toolSearchQuery, setToolSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
   
   // Media States
   const [thumbnail, setThumbnail] = useState('');
@@ -140,22 +141,31 @@ export default function AdminDashboard() {
     }
   };
 
-  // Handle checking/unchecking a tool
-  const handleToolToggle = (toolName) => {
-    if (selectedTools.includes(toolName)) {
-      setSelectedTools(prev => prev.filter(t => t !== toolName));
-    } else {
-      setSelectedTools(prev => [...prev, toolName]);
-    }
-  };
-
-  // Add Custom Tool Checkbox
-  const handleAddCustomTool = (e) => {
-    e.preventDefault();
-    const cleanTool = customToolInput.trim();
+  // Handle adding tool from search/autocomplete
+  const handleAddTool = (toolName) => {
+    const cleanTool = toolName.trim();
     if (cleanTool && !selectedTools.includes(cleanTool)) {
       setSelectedTools(prev => [...prev, cleanTool]);
-      setCustomToolInput('');
+    }
+    setToolSearchQuery('');
+    setShowSuggestions(false);
+  };
+
+  // Remove tool badge
+  const handleRemoveTool = (toolName) => {
+    setSelectedTools(prev => prev.filter(t => t !== toolName));
+  };
+
+  // Handle enter key or backspace in tool selector
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const query = toolSearchQuery.trim();
+      if (query) {
+        handleAddTool(query);
+      }
+    } else if (e.key === 'Backspace' && !toolSearchQuery && selectedTools.length > 0) {
+      handleRemoveTool(selectedTools[selectedTools.length - 1]);
     }
   };
 
@@ -523,51 +533,73 @@ export default function AdminDashboard() {
 
 
 
-              {/* Tools Multi-Select Checkboxes Grid */}
-              <div className="form-group border-top-form">
+              {/* Autocomplete Search Tool Tag Input */}
+              <div className="form-group border-top-form relative-input-group">
                 <label className="form-label">Select Tools & Frameworks Used *</label>
-                <div className="tools-checkbox-grid">
-                  {COMMON_TOOLS.map(tool => {
-                    const isChecked = selectedTools.includes(tool);
-                    return (
-                      <div 
-                        key={tool} 
-                        className={`tool-checkbox-item ${isChecked ? 'checked' : ''}`}
-                        onClick={() => handleToolToggle(tool)}
+                <div 
+                  className={`tag-input-container ${showSuggestions ? 'focused' : ''}`}
+                  onClick={() => {
+                    const inputElement = document.querySelector('.tag-text-input');
+                    if (inputElement) inputElement.focus();
+                  }}
+                >
+                  {selectedTools.map(tool => (
+                    <span key={tool} className="selected-tag-badge">
+                      {tool}
+                      <button 
+                        type="button" 
+                        onClick={() => handleRemoveTool(tool)} 
+                        className="remove-tag-btn"
+                        title={`Remove ${tool}`}
                       >
-                        {isChecked ? <CheckSquare size={16} className="checkbox-icon icon-checked" /> : <Square size={16} className="checkbox-icon" />}
-                        <span className="checkbox-label">{tool}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-                
-                {/* Custom Tool Adder */}
-                <div className="custom-tool-adder-row">
+                        <X size={10} />
+                      </button>
+                    </span>
+                  ))}
                   <input 
                     type="text" 
-                    value={customToolInput} 
-                    onChange={e => setCustomToolInput(e.target.value)} 
-                    placeholder="Other tool (e.g. Docker, Redux)"
-                    className="form-input custom-tool-input-text" 
+                    value={toolSearchQuery}
+                    onChange={e => {
+                      setToolSearchQuery(e.target.value);
+                      setShowSuggestions(true);
+                    }}
+                    onFocus={() => setShowSuggestions(true)}
+                    onBlur={() => {
+                      // Small delay so click on suggestion dropdown registers before blur
+                      setTimeout(() => setShowSuggestions(false), 200);
+                    }}
+                    onKeyDown={handleKeyDown}
+                    placeholder={selectedTools.length === 0 ? "Type or choose tools (e.g. React, Photoshop)..." : ""}
+                    className="tag-text-input" 
                   />
-                  <button type="button" onClick={handleAddCustomTool} className="btn btn-secondary add-tool-btn" title="Add tool">
-                    <Plus size={14} /> Add
-                  </button>
                 </div>
-                
-                {/* Selected Custom Tools Badges */}
-                {selectedTools.filter(t => !COMMON_TOOLS.includes(t)).length > 0 && (
-                  <div className="custom-tools-badges-row">
-                    <span className="badge-label">Custom:</span>
-                    {selectedTools.filter(t => !COMMON_TOOLS.includes(t)).map(tool => (
-                      <span key={tool} className="tool-badge-pill">
-                        {tool}
-                        <button type="button" onClick={() => handleToolToggle(tool)} className="remove-badge-btn">
-                          <X size={10} />
-                        </button>
-                      </span>
-                    ))}
+
+                {/* Suggestions Dropdown list */}
+                {showSuggestions && (
+                  <div className="suggestions-dropdown card fade-in">
+                    {COMMON_TOOLS
+                      .filter(tool => 
+                        tool.toLowerCase().includes(toolSearchQuery.toLowerCase()) && 
+                        !selectedTools.includes(tool)
+                      )
+                      .map(tool => (
+                        <div 
+                          key={tool} 
+                          className="suggestion-item"
+                          onMouseDown={() => handleAddTool(tool)}
+                        >
+                          {tool}
+                        </div>
+                      ))
+                    }
+                    {toolSearchQuery.trim() && !COMMON_TOOLS.some(t => t.toLowerCase() === toolSearchQuery.trim().toLowerCase()) && !selectedTools.includes(toolSearchQuery.trim()) && (
+                      <div 
+                        className="suggestion-item custom-suggestion"
+                        onMouseDown={() => handleAddTool(toolSearchQuery.trim())}
+                      >
+                        Add Custom: <strong>"{toolSearchQuery.trim()}"</strong>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

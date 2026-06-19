@@ -913,3 +913,116 @@
     gap: 6px;
   }
 }
+
+/* Autocomplete Search Tool Tag Input */
+.relative-input-group {
+  position: relative;
+}
+
+.tag-input-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  min-height: 48px;
+  cursor: text;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-fast);
+}
+
+.tag-input-container.focused {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.selected-tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  user-select: none;
+}
+
+.remove-tag-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 50%;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.remove-tag-btn:hover {
+  background-color: var(--border-color);
+  color: #ef4444;
+}
+
+.tag-text-input {
+  border: none !important;
+  background: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  flex: 1;
+  min-width: 140px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  padding: 4px 0 !important;
+  height: auto !important;
+}
+
+.tag-text-input::placeholder {
+  color: var(--text-muted);
+}
+
+.suggestions-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.suggestion-item {
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.suggestion-item:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.suggestion-item.custom-suggestion {
+  border-top: 1px dashed var(--border-color);
+  background-color: var(--bg-secondary);
+}
+
+.suggestion-item.custom-suggestion:hover {
+  background-color: var(--accent-light);
+  color: var(--accent);
+}
