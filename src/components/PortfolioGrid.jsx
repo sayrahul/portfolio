@@ -310,13 +310,15 @@ export default function PortfolioGrid() {
                       <span className="preview-dot dot-yellow"></span>
                       <span className="preview-dot dot-green"></span>
                     </div>
-                    <LazyLoadImage
-                      src={getOptimizedImageUrl(selectedProject.thumbnail, 1200)}
-                      alt={selectedProject.title}
-                      className="browser-preview-img"
-                      effect="blur"
-                      style={{ width: '100%', height: 'auto', display: 'block' }}
-                    />
+                    <div className="browser-screen-scroll-container">
+                      <LazyLoadImage
+                        src={getOptimizedImageUrl(selectedProject.thumbnail, 1200)}
+                        alt={selectedProject.title}
+                        className="browser-preview-img"
+                        effect="blur"
+                        style={{ width: '100%', height: 'auto', display: 'block' }}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
