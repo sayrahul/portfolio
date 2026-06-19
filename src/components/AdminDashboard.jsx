@@ -683,6 +683,61 @@ export default function AdminDashboard() {
               </div>
             </form>
           </div>
+
+          {/* Portfolio Catalog Manager */}
+          <div className="admin-catalog-card card">
+            <h3 className="admin-card-title">Manage Portfolio Catalog ({projectsList.length})</h3>
+            <p className="admin-card-desc">
+              Edit tags, update visual assets, or delete projects directly from the portfolio database.
+            </p>
+            {projectsList.length === 0 ? (
+              <div className="empty-catalog-msg">
+                <AlertCircle size={28} className="placeholder-icon" />
+                <p>No projects found. Use the form above to add a new project.</p>
+              </div>
+            ) : (
+              <div className="catalog-items-list">
+                {projectsList.map(proj => (
+                  <div key={proj.id} className="catalog-item-row">
+                    <img src={proj.thumbnail} alt={proj.title} className="catalog-item-thumb" />
+                    <div className="catalog-item-info">
+                      <h4 className="catalog-item-title">{proj.title}</h4>
+                      <p className="catalog-item-meta">
+                        <span className="cat-pill">{proj.category}</span>
+                        <span className="subcat-pill">{proj.subcategory}</span>
+                      </p>
+                      {proj.tools && proj.tools.length > 0 && (
+                        <div className="catalog-item-tools">
+                          {proj.tools.map((t, i) => (
+                            <span key={i} className="catalog-tool-tag">{t}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="catalog-item-actions">
+                      <button 
+                        type="button"
+                        onClick={() => handleEditClick(proj)} 
+                        className="catalog-btn edit"
+                        title="Edit Project"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => handleDeleteProject(proj.id)} 
+                        className="catalog-btn delete"
+                        title="Delete Project"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
     </div>
