@@ -224,3 +224,101 @@ h1, h2, h3, h4, h5, h6 {
     gap: 20px;
   }
 }
+
+/* ==================== DARK MODE THEME SYSTEM ==================== */
+body.dark-theme {
+  --bg-primary: #0f172a;    /* Slate 900 */
+  --bg-secondary: #1e293b;  /* Slate 800 */
+  --bg-tertiary: #1e293b;   /* Slate 800 */
+  
+  --primary: #f8fafc;       /* Slate 50 */
+  --accent: #3b82f6;        /* Slate 500 equivalent blue */
+  --accent-light: rgba(59, 130, 246, 0.1);
+  
+  --text-primary: #f1f5f9;  /* Slate 100 */
+  --text-secondary: #cbd5e1;/* Slate 300 */
+  --text-muted: #94a3b8;    /* Slate 400 */
+  
+  --border-color: #334155;  /* Slate 700 */
+  --border-focus: #475569;  /* Slate 600 */
+}
+
+/* Scrollbar dark theme override */
+body.dark-theme ::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+body.dark-theme ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+body.dark-theme ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Force dark theme background color on cards & items with hardcoded white backgrounds */
+body.dark-theme .card,
+body.dark-theme .modal-content,
+body.dark-theme .portfolio-search-input,
+body.dark-theme .portfolio-empty-state,
+body.dark-theme .admin-form-card,
+body.dark-theme .admin-settings-card,
+body.dark-theme .admin-catalog-card,
+body.dark-theme .admin-sub-nav,
+body.dark-theme .catalog-btn,
+body.dark-theme .sub-filter-pill,
+body.dark-theme .tag-input-container,
+body.dark-theme .suggestions-dropdown,
+body.dark-theme .quote-calculator-card {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+}
+
+body.dark-theme .form-input,
+body.dark-theme .select-input {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+body.dark-theme .header.scrolled {
+  background-color: rgba(15, 23, 42, 0.9) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+body.dark-theme .nav-mobile {
+  background-color: rgba(15, 23, 42, 0.98) !important;
+  border-color: var(--border-color) !important;
+}
+
+body.dark-theme .catalog-item-row {
+  background-color: var(--bg-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+body.dark-theme .catalog-tool-tag {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+body.dark-theme .preview-browser-bar {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+body.dark-theme .sub-nav-btn:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+body.dark-theme .sub-nav-btn.active {
+  background-color: var(--accent) !important;
+  color: #ffffff !important;
+}
+
+/* Slider indicator adjustments for dark mode compatibility */
+body.dark-theme .before-after-slider-divider {
+  background-color: #ffffff !important;
+}
+body.dark-theme .slider-instructions {
+  color: var(--text-muted) !important;
+}

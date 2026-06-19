@@ -238,26 +238,6 @@ export default function PortfolioGrid() {
                       <span>{project.subcategory}</span>
                     </div>
 
-                    {/* Admin Edit/Delete Controls */}
-                    {isAdmin && (
-                      <div className="admin-card-controls">
-                        <button 
-                          className="admin-card-btn edit-btn" 
-                          onClick={(e) => handleEditProject(project.id, e)}
-                          title="Edit Project"
-                        >
-                          <Pencil size={14} />
-                        </button>
-                        <button 
-                          className="admin-card-btn delete-btn" 
-                          onClick={(e) => handleDeleteProject(project.id, e)}
-                          title="Delete Project"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    )}
-
                     {/* INTERACTIVE HOVER OVERLAY */}
                     <div className="project-card-overlay">
                       <div className="overlay-content">
@@ -355,7 +335,7 @@ export default function PortfolioGrid() {
                     </div>
                     <div className="browser-screen-scroll-container">
                       <LazyLoadImage
-                        src={getOptimizedImageUrl(selectedProject.thumbnail, 1200)}
+                        src={getOptimizedImageUrl(selectedProject.webScreenshot || selectedProject.thumbnail, 1200)}
                         alt={selectedProject.title}
                         className="browser-preview-img"
                         effect="blur"

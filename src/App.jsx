@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, useScroll } from 'framer-motion';
 import Header from './components/Header';
 import PortfolioGrid from './components/PortfolioGrid';
 import ResumePage from './components/ResumePage';
@@ -10,6 +11,7 @@ export default function App() {
   const currentYear = new Date().getFullYear();
   const [currentHash, setCurrentHash] = useState(window.location.hash);
   const [showUpdateToast, setShowUpdateToast] = useState(false);
+  const { scrollYProgress } = useScroll();
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -51,6 +53,10 @@ export default function App() {
 
   return (
     <div className="app-layout">
+      <motion.div 
+        className="scroll-progress-bar" 
+        style={{ scaleX: scrollYProgress }} 
+      />
       {isResumeView ? (
         // Separate Printable Resume view
         <ResumePage />
