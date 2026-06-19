@@ -31,6 +31,7 @@ export default function Header() {
         <nav className="nav-desktop">
           <a href="#work">Portfolio</a>
           <a href="#/resume">Resume</a>
+          <a href="#/admin" className="nav-admin-link">Admin</a>
           <a href="#/contact" className="btn btn-primary nav-btn">Get In Touch</a>
         </nav>
 
@@ -45,6 +46,7 @@ export default function Header() {
         <div className="nav-mobile fade-in">
           <a href="#work" onClick={toggleMenu}>Portfolio</a>
           <a href="#/resume" onClick={toggleMenu}>Resume</a>
+          <a href="#/admin" onClick={toggleMenu}>Admin Panel</a>
           <a href="#/contact" onClick={toggleMenu} className="btn btn-primary">Get In Touch</a>
         </div>
       )}

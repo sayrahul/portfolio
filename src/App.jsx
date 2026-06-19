@@ -3,6 +3,7 @@ import Header from './components/Header';
 import PortfolioGrid from './components/PortfolioGrid';
 import ResumePage from './components/ResumePage';
 import ContactPage from './components/ContactPage';
+import AdminDashboard from './components/AdminDashboard';
 import './App.css';
 
 export default function App() {
@@ -27,6 +28,8 @@ export default function App() {
       document.title = "Rahul Jadhav | Professional Interactive Resume";
     } else if (currentHash === '#/contact') {
       document.title = "Rahul Jadhav | Project Planner & Onboarding";
+    } else if (currentHash === '#/admin') {
+      document.title = "Rahul Jadhav | Portfolio Admin Console";
     } else {
       document.title = "Rahul Jadhav | Web & Graphic Designer Portfolio";
     }
@@ -44,6 +47,7 @@ export default function App() {
 
   const isResumeView = currentHash === '#/resume';
   const isContactView = currentHash === '#/contact';
+  const isAdminView = currentHash === '#/admin';
 
   return (
     <div className="app-layout">
@@ -53,6 +57,9 @@ export default function App() {
       ) : isContactView ? (
         // Separate Interactive Contact/Onboarding page
         <ContactPage />
+      ) : isAdminView ? (
+        // Cloudinary Admin Upload Dashboard
+        <AdminDashboard />
       ) : (
         // Standard Portfolio Site views
         <>

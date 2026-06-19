@@ -13,6 +13,16 @@ const CATEGORIES = ["All", "Web Design", "Graphic Design", "Video Editing"];
 const BATCH_SIZE = 6;
 
 export default function PortfolioGrid() {
+  const [projectsList, setProjectsList] = useState(() => {
+    try {
+      const localProjects = JSON.parse(localStorage.getItem('custom_portfolio_projects') || '[]');
+      return [...PROJECTS, ...localProjects];
+    } catch (e) {
+      console.warn("Failed to load custom projects from localStorage:", e);
+      return PROJECTS;
+    }
+  });
+
   const [activeFilter, setActiveFilter] = useState("All");
   const [activeSubFilter, setActiveSubFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
@@ -39,7 +49,7 @@ export default function PortfolioGrid() {
 
   // 1. Get dynamically filtered list of projects
   const getFilteredProjects = () => {
-    return PROJECTS.filter(project => {
+    return projectsList.filter(project => {
       // Search match
       const matchesSearch = 
         project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -61,7 +71,7 @@ export default function PortfolioGrid() {
 
   // 2. Dynamic Count Calculations
   const getCategoryCount = (category) => {
-    return PROJECTS.filter(project => {
+    return projectsList.filter(project => {
       const matchesSearch = 
         project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         project.shortDescription.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -77,7 +87,7 @@ export default function PortfolioGrid() {
   const getSubcategories = () => {
     if (activeFilter === "All") return [];
     
-    const matches = PROJECTS.filter(p => p.category === activeFilter && (
+    const matches = projectsList.filter(p => p.category === activeFilter && (
       p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.shortDescription.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.tools.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()))

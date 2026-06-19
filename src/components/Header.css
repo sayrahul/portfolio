@@ -129,3 +129,15 @@
     height: 60px;
   }
 }
+
+/* Muted visual style for Admin link to keep header corporate */
+.nav-desktop .nav-admin-link {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.nav-desktop .nav-admin-link:hover {
+  opacity: 1;
+  color: var(--accent) !important;
+}
