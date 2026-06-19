@@ -1,0 +1,116 @@
+.slider-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  user-select: none;
+  background-color: var(--bg-tertiary);
+}
+
+.slider-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.before-image {
+  z-index: 1;
+}
+
+.after-image {
+  z-index: 2;
+}
+
+/* Labels */
+.slider-label {
+  position: absolute;
+  top: 16px;
+  background-color: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  z-index: 4;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.label-before {
+  left: 16px;
+}
+
+.label-after {
+  right: 16px;
+}
+
+/* Handle line and button */
+.slider-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: #ffffff;
+  z-index: 3;
+  pointer-events: none;
+  transform: translateX(-50%);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.slider-handle-line {
+  width: 100%;
+  height: 100%;
+}
+
+.slider-handle-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  color: var(--primary);
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.slider-arrow {
+  line-height: 0;
+  margin-top: -2px;
+}
+
+/* Transparent Range Input Overlay */
+.slider-range-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: ew-resize;
+  z-index: 5;
+  margin: 0;
+  touch-action: pan-y;
+}
+
+/* Hide webkit/moz track default focus */
+.slider-range-input:focus {
+  outline: none;
+}
