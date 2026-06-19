@@ -26,10 +26,9 @@
   align-items: start;
 }
 
-/* Card overrides */
+/* Card layout overrides */
 .admin-form-card,
 .admin-settings-card,
-.admin-export-card,
 .admin-manage-card {
   background-color: #ffffff;
   padding: 32px;
@@ -72,8 +71,8 @@
 
 .border-top-form {
   border-top: 1px dashed var(--border-color);
-  padding-top: 20px;
-  margin-top: 8px;
+  padding-top: 24px;
+  margin-top: 12px;
 }
 
 .select-input {
@@ -87,7 +86,7 @@
   padding: 12px;
 }
 
-/* Upload input group uploader */
+/* Upload input uploader */
 .upload-input-group {
   display: flex;
   gap: 12px;
@@ -141,46 +140,284 @@
   to { transform: rotate(360deg); }
 }
 
-/* Exporter block */
-.export-header {
+/* Auth lock screen styles */
+.admin-lock-screen-wrapper {
+  background-color: var(--bg-tertiary);
+  min-height: 100vh;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 12px;
+  padding: 24px;
+  position: relative;
 }
 
-.code-editor-pre {
-  background-color: #0f172a;
+.lock-back-link {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: var(--transition-fast);
+}
+
+.lock-back-link:hover {
+  color: var(--accent);
+}
+
+.lock-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 40px 32px;
+  background-color: #ffffff;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
   border-radius: var(--radius-md);
-  padding: 16px;
-  max-height: 400px;
-  overflow-y: auto;
-  border: 1px solid #1e293b;
 }
 
-.code-editor-pre pre {
-  margin: 0;
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 0.78rem;
-  color: #e2e8f0;
-  white-space: pre-wrap;
+.lock-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.lock-icon-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--accent-light);
+  color: var(--accent);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.lock-title {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.lock-subtitle {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.lock-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.relative-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-inner-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.authenticated-input {
+  padding-left: 42px;
+}
+
+.lock-submit-btn {
+  padding: 12px;
+  font-weight: 600;
+}
+
+.login-error-box {
+  margin-bottom: 20px;
+}
+
+.btn-logout {
+  color: #ef4444 !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+.btn-logout:hover {
+  background-color: #fef2f2 !important;
+  border-color: #ef4444 !important;
+}
+
+/* Tools checkbox checklist grid */
+.tools-checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.tool-checkbox-item {
+  border: 1px solid var(--border-color);
+  background-color: #ffffff;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--transition-fast);
+  user-select: none;
+}
+
+.tool-checkbox-item:hover {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-focus);
+}
+
+.tool-checkbox-item.checked {
+  background-color: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.checkbox-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.tool-checkbox-item.checked .checkbox-icon {
+  color: var(--accent);
+}
+
+.checkbox-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
   text-align: left;
 }
 
-.active-copy {
-  background-color: #10b981 !important;
-  color: #ffffff !important;
-  border-color: #10b981 !important;
+.tool-checkbox-item.checked .checkbox-label {
+  color: var(--accent);
 }
 
-.success-copy-icon {
-  color: #ffffff;
+/* Custom tool adder */
+.custom-tool-adder-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
 }
 
-/* Sandbox Manager */
+.custom-tool-input-text {
+  flex: 1;
+}
+
+.add-tool-btn {
+  padding: 8px 16px;
+}
+
+/* Custom badges row */
+.custom-tools-badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.badge-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-right: 4px;
+}
+
+.tool-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.remove-badge-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 50%;
+}
+
+.remove-badge-btn:hover {
+  background-color: var(--border-color);
+  color: #ef4444;
+}
+
+/* CRUD alert warning panels */
+.alert-success {
+  background-color: var(--accent-light);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  color: var(--accent);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.alert-warning {
+  background-color: #fffbeb;
+  border: 1px solid #fef3c7;
+  color: #d97706;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  position: relative;
+}
+
+.cancel-edit-x-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #d97706;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  transition: var(--transition-fast);
+}
+
+.cancel-edit-x-btn:hover {
+  background-color: #fef3c7;
+}
+
+/* Sandbox/Catalog Manager */
 .no-sandbox-msg {
   display: flex;
   flex-direction: column;
@@ -208,8 +445,9 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-height: 400px;
+  max-height: 500px;
   overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .sandbox-item-row {
@@ -265,6 +503,11 @@
   color: #ef4444;
 }
 
+.sandbox-delete-btn:first-child:hover {
+  background-color: var(--accent-light);
+  color: var(--accent);
+}
+
 .btn-danger:hover {
   background-color: #ef4444 !important;
   color: #ffffff !important;
@@ -275,54 +518,6 @@
   background-color: var(--primary) !important;
   color: #ffffff !important;
   border-color: var(--primary) !important;
-}
-
-.alert-success {
-  background-color: var(--accent-light);
-  border: 1px solid rgba(37, 99, 235, 0.2);
-  color: var(--accent);
-  padding: 12px 16px;
-  border-radius: var(--radius-sm);
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.88rem;
-  font-weight: 600;
-}
-
-.alert-warning {
-  background-color: #fffbeb;
-  border: 1px solid #fef3c7;
-  color: #d97706;
-  padding: 12px 16px;
-  border-radius: var(--radius-sm);
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  position: relative;
-}
-
-.cancel-edit-x-btn {
-  position: absolute;
-  right: 12px;
-  background: none;
-  border: none;
-  color: #d97706;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  border-radius: 50%;
-  transition: var(--transition-fast);
-}
-
-.cancel-edit-x-btn:hover {
-  background-color: #fef3c7;
 }
 
 /* Responsive styles */
@@ -343,8 +538,31 @@
   }
   .admin-form-card,
   .admin-settings-card,
-  .admin-export-card,
   .admin-manage-card {
     padding: 20px 16px;
+  }
+  .tools-checkbox-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .admin-action-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .admin-action-bar div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .admin-action-bar .btn {
+    text-align: center;
+    justify-content: center;
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .tools-checkbox-grid {
+    grid-template-columns: 1fr;
   }
 }

@@ -1,9 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Save, Upload, Trash2, Copy, Check, Settings, Sparkles, RefreshCw, AlertCircle, Pencil, X } from 'lucide-react';
+import { ArrowLeft, Save, Upload, Trash2, Settings, Sparkles, RefreshCw, AlertCircle, Pencil, X, Lock, User, LogOut, CheckSquare, Square, Plus } from 'lucide-react';
 import { PROJECTS } from '../data/projects';
 import './AdminDashboard.css';
 
+const COMMON_TOOLS = [
+  "Figma", 
+  "Adobe Photoshop", 
+  "Adobe Illustrator", 
+  "Adobe After Effects", 
+  "Adobe Premiere Pro", 
+  "DaVinci Resolve", 
+  "Lightroom", 
+  "Adobe InDesign", 
+  "React", 
+  "Vanilla CSS", 
+  "Tailwind CSS", 
+  "HTML/CSS", 
+  "UI/UX Design", 
+  "Responsive Layout", 
+  "Sound Design"
+];
+
 export default function AdminDashboard() {
+  // Auth State
+  const [isLoggedIn, setIsLoggedIn] = useState(() => sessionStorage.getItem('portfolio_admin_logged_in') === 'true');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+
   // Cloudinary Settings
   const [cloudName, setCloudName] = useState(() => localStorage.getItem('cloudinary_cloud_name') || 'dno3fddh9');
   const [uploadPreset, setUploadPreset] = useState(() => localStorage.getItem('cloudinary_upload_preset') || 'uzxyc123');
@@ -31,9 +55,9 @@ export default function AdminDashboard() {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Web Design');
   const [subcategory, setSubcategory] = useState('');
-  const [shortDesc, setShortDesc] = useState('');
-  const [details, setDetails] = useState('');
-  const [toolsInput, setToolsInput] = useState('');
+  const [description, setDescription] = useState('');
+  const [selectedTools, setSelectedTools] = useState([]);
+  const [customToolInput, setCustomToolInput] = useState('');
   
   // Media States
   const [thumbnail, setThumbnail] = useState('');
@@ -45,8 +69,25 @@ export default function AdminDashboard() {
 
   // UI status
   const [uploadingField, setUploadingField] = useState(null); // 'thumbnail', 'beforeImage', etc.
-  const [copiedCode, setCopiedCode] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+
+  // Login Handler
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (username.trim().toLowerCase() === 'admin' && password === 'rahul@123') {
+      setIsLoggedIn(true);
+      sessionStorage.setItem('portfolio_admin_logged_in', 'true');
+      setLoginError('');
+    } else {
+      setLoginError('Invalid admin username or password.');
+    }
+  };
+
+  // Logout Handler
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    sessionStorage.removeItem('portfolio_admin_logged_in');
+  };
 
   // Save Settings to LocalStorage
   const handleSaveSettings = (e) => {
@@ -93,9 +134,28 @@ export default function AdminDashboard() {
 
     } catch (err) {
       console.error("Cloudinary upload failed:", err);
-      alert("Direct upload failed. Make sure your upload preset is configured as 'Unsigned' in your Cloudinary Dashboard Settings.");
+      alert("Direct upload failed. Make sure your upload preset is configured as 'Unsigned' in your Cloudinary Settings.");
     } finally {
       setUploadingField(null);
+    }
+  };
+
+  // Handle checking/unchecking a tool
+  const handleToolToggle = (toolName) => {
+    if (selectedTools.includes(toolName)) {
+      setSelectedTools(prev => prev.filter(t => t !== toolName));
+    } else {
+      setSelectedTools(prev => [...prev, toolName]);
+    }
+  };
+
+  // Add Custom Tool Checkbox
+  const handleAddCustomTool = (e) => {
+    e.preventDefault();
+    const cleanTool = customToolInput.trim();
+    if (cleanTool && !selectedTools.includes(cleanTool)) {
+      setSelectedTools(prev => [...prev, cleanTool]);
+      setCustomToolInput('');
     }
   };
 
@@ -105,9 +165,8 @@ export default function AdminDashboard() {
     setTitle(project.title);
     setCategory(project.category);
     setSubcategory(project.subcategory);
-    setShortDesc(project.shortDescription);
-    setDetails(project.details || '');
-    setToolsInput(project.tools ? project.tools.join(', ') : '');
+    setDescription(project.details || project.shortDescription || '');
+    setSelectedTools(project.tools || []);
     setThumbnail(project.thumbnail || '');
     
     // Set specific fields
@@ -129,9 +188,8 @@ export default function AdminDashboard() {
     setEditingProjectId(null);
     setTitle('');
     setSubcategory('');
-    setShortDesc('');
-    setDetails('');
-    setToolsInput('');
+    setDescription('');
+    setSelectedTools([]);
     setThumbnail('');
     setLiveUrl('');
     setBeforeImage('');
@@ -143,7 +201,7 @@ export default function AdminDashboard() {
   // Add or Update Project
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    if (!title || !subcategory || !shortDesc) {
+    if (!title || !subcategory || !description) {
       alert("Please fill out all required fields.");
       return;
     }
@@ -152,13 +210,14 @@ export default function AdminDashboard() {
     if (category === 'Graphic Design') iconType = 'design';
     else if (category === 'Video Editing') iconType = 'video';
 
+    // Map unified description to both card shortDescription and modal details
     const projectData = {
       title,
       category,
       subcategory,
-      shortDescription: shortDesc,
-      details,
-      tools: toolsInput.split(',').map(t => t.trim()).filter(t => t !== ''),
+      shortDescription: description,
+      details: description,
+      tools: selectedTools,
       iconType,
       thumbnail: thumbnail || 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800'
     };
@@ -179,7 +238,6 @@ export default function AdminDashboard() {
       // Edit mode: find and update
       updatedList = projectsList.map(proj => {
         if (proj.id === editingProjectId) {
-          // Keep the original id, replace other details
           return {
             ...proj,
             ...projectData
@@ -196,7 +254,7 @@ export default function AdminDashboard() {
         ...projectData
       };
       updatedList = [...projectsList, newProj];
-      setSuccessMsg('New project added to database!');
+      setSuccessMsg('New project added successfully!');
     }
 
     setProjectsList(updatedList);
@@ -205,9 +263,8 @@ export default function AdminDashboard() {
     // Clear form fields
     setTitle('');
     setSubcategory('');
-    setShortDesc('');
-    setDetails('');
-    setToolsInput('');
+    setDescription('');
+    setSelectedTools([]);
     setThumbnail('');
     setLiveUrl('');
     setBeforeImage('');
@@ -232,33 +289,73 @@ export default function AdminDashboard() {
 
   // Restore System Defaults
   const handleRestoreDefaults = () => {
-    if (window.confirm("Are you sure you want to restore the default projects? This will overwrite all custom updates, additions, and deletions.")) {
+    if (window.confirm("Are you sure you want to restore default template projects? This will overwrite your current list.")) {
       setProjectsList(PROJECTS);
       localStorage.setItem('portfolio_projects_db', JSON.stringify(PROJECTS));
       handleCancelEdit();
-      setSuccessMsg('System default projects restored!');
+      setSuccessMsg('Defaults restored successfully!');
       setTimeout(() => setSuccessMsg(''), 3000);
     }
   };
 
-  // Copy updated code to clipboard
-  const handleCopyCode = () => {
-    const generatedJs = `/**
- * Portfolio Projects Data Module
- * (Generated from Admin Dashboard)
- */
+  /* ==================== LOGIN LOCK SCREEN ==================== */
+  if (!isLoggedIn) {
+    return (
+      <div className="admin-lock-screen-wrapper">
+        <a href="#work" className="lock-back-link">
+          <ArrowLeft size={14} /> Back to Site
+        </a>
+        <div className="lock-card card fade-in">
+          <div className="lock-header">
+            <div className="lock-icon-circle">
+              <Lock size={24} />
+            </div>
+            <h1 className="lock-title">Rahul Jadhav</h1>
+            <p className="lock-subtitle">Security Console Authentication</p>
+          </div>
 
-export const PROJECTS = ${JSON.stringify(projectsList, null, 2)};
-`;
-    navigator.clipboard.writeText(generatedJs);
-    setCopiedCode(true);
-    setTimeout(() => setCopiedCode(false), 2000);
-  };
+          {loginError && (
+            <div className="login-error-box alert alert-danger fade-in">
+              <AlertCircle size={16} />
+              <span>{loginError}</span>
+            </div>
+          )}
 
-  const codePreviewContent = () => {
-    return `export const PROJECTS = ${JSON.stringify(projectsList, null, 2)};`;
-  };
+          <form onSubmit={handleLogin} className="lock-form">
+            <div className="form-group relative-input">
+              <User size={16} className="input-inner-icon" />
+              <input 
+                type="text" 
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                placeholder="Username" 
+                className="form-input authenticated-input"
+                required
+              />
+            </div>
 
+            <div className="form-group relative-input">
+              <Lock size={16} className="input-inner-icon" />
+              <input 
+                type="password" 
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Password" 
+                className="form-input authenticated-input"
+                required
+              />
+            </div>
+
+            <button type="submit" className="btn btn-primary lock-submit-btn">
+              Authenticate
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  /* ==================== MAIN ADMIN CONTROL DASHBOARD ==================== */
   return (
     <div className="admin-page-wrapper">
       {/* Header bar */}
@@ -274,15 +371,18 @@ export const PROJECTS = ${JSON.stringify(projectsList, null, 2)};
           >
             <Settings size={16} /> Cloudinary Settings
           </button>
-          <button onClick={handleRestoreDefaults} className="btn btn-secondary btn-danger">
+          <button onClick={handleRestoreDefaults} className="btn btn-secondary">
             Restore Defaults
+          </button>
+          <button onClick={handleLogout} className="btn btn-secondary btn-logout" title="Log Out">
+            <LogOut size={16} /> <span>Logout</span>
           </button>
         </div>
       </div>
 
       <div className="admin-grid container">
         
-        {/* Left Column: Forms */}
+        {/* Left Column: Form Builder */}
         <div className="admin-form-column">
           {successMsg && (
             <div className="alert alert-success fade-in">
@@ -370,55 +470,80 @@ export const PROJECTS = ${JSON.stringify(projectsList, null, 2)};
                 </div>
               </div>
 
-              <div className="form-row grid-2">
-                <div className="form-group">
-                  <label className="form-label">Sub-category (Tag) *</label>
-                  <input 
-                    type="text" 
-                    value={subcategory} 
-                    onChange={e => setSubcategory(e.target.value)} 
-                    placeholder="e.g. SaaS / Retouching / Reels"
-                    className="form-input" 
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Tools Used (comma separated) *</label>
-                  <input 
-                    type="text" 
-                    value={toolsInput} 
-                    onChange={e => setToolsInput(e.target.value)} 
-                    placeholder="e.g. React, Photoshop, Figma"
-                    className="form-input" 
-                    required
-                  />
-                </div>
-              </div>
-
               <div className="form-group">
-                <label className="form-label">Short Description (Hover card overview) *</label>
+                <label className="form-label">Sub-category (Tag) *</label>
                 <input 
                   type="text" 
-                  value={shortDesc} 
-                  onChange={e => setShortDesc(e.target.value)} 
-                  placeholder="Keep it concise for grid displays..."
+                  value={subcategory} 
+                  onChange={e => setSubcategory(e.target.value)} 
+                  placeholder="e.g. SaaS / Retouching / Reels"
                   className="form-input" 
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label className="form-label">Details (Full modal story)</label>
+                <label className="form-label">Project Description *</label>
                 <textarea 
-                  value={details} 
-                  onChange={e => setDetails(e.target.value)} 
-                  placeholder="Explain project details, requirements, challenges..."
-                  rows="3"
+                  value={description} 
+                  onChange={e => setDescription(e.target.value)} 
+                  placeholder="Describe your project, tools used, highlights..."
+                  rows="4"
                   className="form-input form-textarea"
+                  required
                 />
               </div>
 
-              <div className="form-group">
+              {/* Tools Multi-Select Checkboxes Grid */}
+              <div className="form-group border-top-form">
+                <label className="form-label">Select Tools & Frameworks Used *</label>
+                <div className="tools-checkbox-grid">
+                  {COMMON_TOOLS.map(tool => {
+                    const isChecked = selectedTools.includes(tool);
+                    return (
+                      <div 
+                        key={tool} 
+                        className={`tool-checkbox-item ${isChecked ? 'checked' : ''}`}
+                        onClick={() => handleToolToggle(tool)}
+                      >
+                        {isChecked ? <CheckSquare size={16} className="checkbox-icon icon-checked" /> : <Square size={16} className="checkbox-icon" />}
+                        <span className="checkbox-label">{tool}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                {/* Custom Tool Adder */}
+                <div className="custom-tool-adder-row">
+                  <input 
+                    type="text" 
+                    value={customToolInput} 
+                    onChange={e => setCustomToolInput(e.target.value)} 
+                    placeholder="Other tool (e.g. Docker, Redux)"
+                    className="form-input custom-tool-input-text" 
+                  />
+                  <button type="button" onClick={handleAddCustomTool} className="btn btn-secondary add-tool-btn" title="Add tool">
+                    <Plus size={14} /> Add
+                  </button>
+                </div>
+                
+                {/* Selected Custom Tools Badges */}
+                {selectedTools.filter(t => !COMMON_TOOLS.includes(t)).length > 0 && (
+                  <div className="custom-tools-badges-row">
+                    <span className="badge-label">Custom:</span>
+                    {selectedTools.filter(t => !COMMON_TOOLS.includes(t)).map(tool => (
+                      <span key={tool} className="tool-badge-pill">
+                        {tool}
+                        <button type="button" onClick={() => handleToolToggle(tool)} className="remove-badge-btn">
+                          <X size={10} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group border-top-form">
                 <label className="form-label">Main Card Thumbnail *</label>
                 <div className="upload-input-group">
                   <input 
@@ -558,33 +683,14 @@ export const PROJECTS = ${JSON.stringify(projectsList, null, 2)};
           </div>
         </div>
 
-        {/* Right Column: Code Exporter & Database Management */}
+        {/* Right Column: Database Project Catalog Manager */}
         <div className="admin-sidebar-column">
           
-          {/* Exporter Block */}
-          <div className="admin-export-card card">
-            <div className="export-header">
-              <h3 className="admin-card-title" style={{ marginBottom: 0 }}>Export database</h3>
-              <button 
-                onClick={handleCopyCode} 
-                className={`btn btn-secondary ${copiedCode ? 'active-copy' : ''}`}
-                title="Copy Javascript file code"
-              >
-                {copiedCode ? <Check size={14} className="success-copy-icon" /> : <Copy size={14} />}
-                <span>{copiedCode ? 'Copied!' : 'Copy Code'}</span>
-              </button>
-            </div>
-            <p className="admin-card-desc" style={{ marginTop: '8px' }}>
-              Whenever you make changes, click this button to copy the generated data code. Paste it to overwrite your <strong>src/data/projects.js</strong> file and commit to GitHub to deploy permanently.
-            </p>
-            <div className="code-editor-pre">
-              <pre><code>{codePreviewContent()}</code></pre>
-            </div>
-          </div>
-
-          {/* Database Projects manager */}
           <div className="admin-manage-card card">
-            <h3 className="admin-card-title">Database Projects ({projectsList.length})</h3>
+            <h3 className="admin-card-title">Manage Projects ({projectsList.length})</h3>
+            <p className="admin-card-desc">
+              Edit descriptions, update visual assets, modify tags, or delete outdated projects.
+            </p>
             {projectsList.length === 0 ? (
               <div className="no-sandbox-msg">
                 <AlertCircle size={28} className="placeholder-icon" />
