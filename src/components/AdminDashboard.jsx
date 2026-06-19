@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Save, Upload, Trash2, Settings, Sparkles, RefreshCw, AlertCircle, Pencil, X, Lock, User, LogOut, CheckSquare, Square, Plus } from 'lucide-react';
+import { ArrowLeft, Save, Upload, Trash2, Settings, Sparkles, RefreshCw, AlertCircle, Pencil, X, Lock, User, LogOut, CheckSquare, Square, Plus, FolderOpen } from 'lucide-react';
 import { PROJECTS } from '../data/projects';
 import './AdminDashboard.css';
 
@@ -27,6 +27,7 @@ export default function AdminDashboard() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [activeTab, setActiveTab] = useState('form'); // 'form' or 'catalog'
 
   // Cloudinary Settings
   const [cloudName, setCloudName] = useState(() => localStorage.getItem('cloudinary_cloud_name') || 'dno3fddh9');
@@ -174,6 +175,8 @@ export default function AdminDashboard() {
     setVideoUrl(project.videoUrl || '');
     setPoster(project.poster || '');
 
+    setActiveTab('form'); // Switch to Form tab when editing
+    
     // Scroll form card into view
     const formElement = document.querySelector('.admin-form-card');
     if (formElement) {
@@ -392,6 +395,28 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* Segmented Sub-navigation Tabs */}
+      <div className="admin-sub-nav-container">
+        <div className="admin-sub-nav">
+          <button 
+            type="button"
+            className={`sub-nav-btn ${activeTab === 'form' ? 'active' : ''}`}
+            onClick={() => setActiveTab('form')}
+          >
+            {editingProjectId ? <Pencil size={15} /> : <Plus size={15} />}
+            <span>{editingProjectId ? 'Modify Project' : 'Upload New Project'}</span>
+          </button>
+          <button 
+            type="button"
+            className={`sub-nav-btn ${activeTab === 'catalog' ? 'active' : ''}`}
+            onClick={() => setActiveTab('catalog')}
+          >
+            <FolderOpen size={15} />
+            <span>Manage Catalog ({projectsList.length})</span>
+          </button>
+        </div>
+      </div>
+
       <div className="admin-grid container centered-admin-grid">
         
         {/* Centered Form Builder */}
@@ -403,8 +428,10 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* Edit Mode Alert Bar */}
-          {editingProjectId && (
+          {activeTab === 'form' ? (
+            <>
+              {/* Edit Mode Alert Bar */}
+              {editingProjectId && (
             <div className="alert alert-warning fade-in">
               <Pencil size={16} />
               <span>Editing Project Mode: Changes will update the existing project.</span>
@@ -683,9 +710,10 @@ export default function AdminDashboard() {
               </div>
             </form>
           </div>
-
-          {/* Portfolio Catalog Manager */}
-          <div className="admin-catalog-card card">
+          </>
+          ) : (
+            /* Portfolio Catalog Manager */
+            <div className="admin-catalog-card card">
             <h3 className="admin-card-title">Manage Portfolio Catalog ({projectsList.length})</h3>
             <p className="admin-card-desc">
               Edit tags, update visual assets, or delete projects directly from the portfolio database.
@@ -737,6 +765,7 @@ export default function AdminDashboard() {
               </div>
             )}
           </div>
+          )}
 
         </div>
       </div>

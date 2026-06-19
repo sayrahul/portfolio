@@ -850,3 +850,66 @@
     height: 38px;
   }
 }
+
+/* Segmented Sub-navigation Tabs */
+.admin-sub-nav-container {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  justify-content: center;
+  margin: 0 auto 24px;
+  padding: 0 16px;
+}
+
+.admin-sub-nav {
+  display: flex;
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  border-radius: 50px;
+  padding: 4px;
+  width: 100%;
+  box-shadow: var(--shadow-sm);
+  gap: 4px;
+}
+
+.sub-nav-btn {
+  flex: 1;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-radius: 50px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.sub-nav-btn:hover {
+  color: var(--text-primary);
+  background-color: rgba(15, 23, 42, 0.04);
+}
+
+.sub-nav-btn.active {
+  background-color: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+}
+
+@media (max-width: 480px) {
+  .sub-nav-btn span {
+    font-size: 0.8rem;
+  }
+  .sub-nav-btn {
+    padding: 8px 12px;
+    gap: 6px;
+  }
+}
