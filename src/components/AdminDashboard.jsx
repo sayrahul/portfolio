@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Save, Upload, Trash2, Copy, Check, Settings, Sparkles, RefreshCw, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Save, Upload, Trash2, Copy, Check, Settings, Sparkles, RefreshCw, AlertCircle, Pencil, X } from 'lucide-react';
 import { PROJECTS } from '../data/projects';
 import './AdminDashboard.css';
 
@@ -9,14 +9,23 @@ export default function AdminDashboard() {
   const [uploadPreset, setUploadPreset] = useState(() => localStorage.getItem('cloudinary_upload_preset') || 'uzxyc123');
   const [showSettings, setShowSettings] = useState(false);
 
-  // Custom Projects List
-  const [customProjects, setCustomProjects] = useState(() => {
+  // Projects Database List (unified database, default + custom)
+  const [projectsList, setProjectsList] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem('custom_portfolio_projects') || '[]');
+      const db = localStorage.getItem('portfolio_projects_db');
+      if (!db) {
+        localStorage.setItem('portfolio_projects_db', JSON.stringify(PROJECTS));
+        return PROJECTS;
+      }
+      return JSON.parse(db);
     } catch (e) {
-      return [];
+      console.warn("Failed to load projects from localStorage:", e);
+      return PROJECTS;
     }
   });
+
+  // Edit Mode States
+  const [editingProjectId, setEditingProjectId] = useState(null);
 
   // Form State
   const [title, setTitle] = useState('');
@@ -44,7 +53,7 @@ export default function AdminDashboard() {
     e.preventDefault();
     localStorage.setItem('cloudinary_cloud_name', cloudName);
     localStorage.setItem('cloudinary_upload_preset', uploadPreset);
-    setSuccessMsg('Settings saved successfully!');
+    setSuccessMsg('Cloudinary settings saved!');
     setTimeout(() => setSuccessMsg(''), 3000);
   };
 
@@ -54,7 +63,7 @@ export default function AdminDashboard() {
     if (!file) return;
 
     if (!cloudName || !uploadPreset) {
-      alert("Please configure your Cloudinary Cloud Name and Upload Preset in the Settings panel first!");
+      alert("Please configure your Cloudinary Cloud Name and Upload Preset in settings first!");
       return;
     }
 
@@ -70,7 +79,7 @@ export default function AdminDashboard() {
       });
       
       if (!response.ok) {
-        throw new Error("Upload failed. Verify settings and preset type.");
+        throw new Error("Upload failed. Verify Cloudinary credentials.");
       }
       
       const data = await response.json();
@@ -84,27 +93,66 @@ export default function AdminDashboard() {
 
     } catch (err) {
       console.error("Cloudinary upload failed:", err);
-      alert("Direct upload failed. Make sure your upload preset is configured as 'Unsigned' in your Cloudinary Dashboard under Settings -> Upload.");
+      alert("Direct upload failed. Make sure your upload preset is configured as 'Unsigned' in your Cloudinary Dashboard Settings.");
     } finally {
       setUploadingField(null);
     }
   };
 
-  // Add Project
-  const handleAddProject = (e) => {
+  // Enter Edit Mode
+  const handleEditClick = (project) => {
+    setEditingProjectId(project.id);
+    setTitle(project.title);
+    setCategory(project.category);
+    setSubcategory(project.subcategory);
+    setShortDesc(project.shortDescription);
+    setDetails(project.details || '');
+    setToolsInput(project.tools ? project.tools.join(', ') : '');
+    setThumbnail(project.thumbnail || '');
+    
+    // Set specific fields
+    setLiveUrl(project.liveUrl || '');
+    setBeforeImage(project.beforeImage || '');
+    setAfterImage(project.afterImage || '');
+    setVideoUrl(project.videoUrl || '');
+    setPoster(project.poster || '');
+
+    // Scroll form card into view
+    const formElement = document.querySelector('.admin-form-card');
+    if (formElement) {
+      formElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // Cancel Editing
+  const handleCancelEdit = () => {
+    setEditingProjectId(null);
+    setTitle('');
+    setSubcategory('');
+    setShortDesc('');
+    setDetails('');
+    setToolsInput('');
+    setThumbnail('');
+    setLiveUrl('');
+    setBeforeImage('');
+    setAfterImage('');
+    setVideoUrl('');
+    setPoster('');
+  };
+
+  // Add or Update Project
+  const handleFormSubmit = (e) => {
     e.preventDefault();
     if (!title || !subcategory || !shortDesc) {
       alert("Please fill out all required fields.");
       return;
     }
 
-    // Determine icon type based on category
     let iconType = 'web';
     if (category === 'Graphic Design') iconType = 'design';
     else if (category === 'Video Editing') iconType = 'video';
 
-    const newProj = {
-      id: `${category.toLowerCase().replace(' ', '-')}-${Date.now()}`,
+    const projectData = {
       title,
       category,
       subcategory,
@@ -115,20 +163,44 @@ export default function AdminDashboard() {
       thumbnail: thumbnail || 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800'
     };
 
-    // Append category-specific parameters
+    // Append category parameters
     if (category === 'Web Design') {
-      if (liveUrl) newProj.liveUrl = liveUrl;
+      if (liveUrl) projectData.liveUrl = liveUrl;
     } else if (category === 'Graphic Design') {
-      if (beforeImage) newProj.beforeImage = beforeImage;
-      if (afterImage) newProj.afterImage = afterImage;
+      if (beforeImage) projectData.beforeImage = beforeImage;
+      if (afterImage) projectData.afterImage = afterImage;
     } else if (category === 'Video Editing') {
-      if (videoUrl) newProj.videoUrl = videoUrl;
-      if (poster) newProj.poster = poster;
+      if (videoUrl) projectData.videoUrl = videoUrl;
+      if (poster) projectData.poster = poster;
     }
 
-    const updatedList = [...customProjects, newProj];
-    setCustomProjects(updatedList);
-    localStorage.setItem('custom_portfolio_projects', JSON.stringify(updatedList));
+    let updatedList;
+    if (editingProjectId) {
+      // Edit mode: find and update
+      updatedList = projectsList.map(proj => {
+        if (proj.id === editingProjectId) {
+          // Keep the original id, replace other details
+          return {
+            ...proj,
+            ...projectData
+          };
+        }
+        return proj;
+      });
+      setSuccessMsg('Project updated successfully!');
+      setEditingProjectId(null);
+    } else {
+      // Add mode: create new
+      const newProj = {
+        id: `${category.toLowerCase().replace(' ', '-')}-${Date.now()}`,
+        ...projectData
+      };
+      updatedList = [...projectsList, newProj];
+      setSuccessMsg('New project added to database!');
+    }
+
+    setProjectsList(updatedList);
+    localStorage.setItem('portfolio_projects_db', JSON.stringify(updatedList));
 
     // Clear form fields
     setTitle('');
@@ -143,34 +215,40 @@ export default function AdminDashboard() {
     setVideoUrl('');
     setPoster('');
 
-    setSuccessMsg('Project added to local sandbox!');
     setTimeout(() => setSuccessMsg(''), 3500);
   };
 
-  // Delete Custom Project
+  // Delete Project
   const handleDeleteProject = (id) => {
-    const updatedList = customProjects.filter(p => p.id !== id);
-    setCustomProjects(updatedList);
-    localStorage.setItem('custom_portfolio_projects', JSON.stringify(updatedList));
+    if (window.confirm("Are you sure you want to delete this project? This will remove it from the database.")) {
+      const updatedList = projectsList.filter(p => p.id !== id);
+      setProjectsList(updatedList);
+      localStorage.setItem('portfolio_projects_db', JSON.stringify(updatedList));
+      if (editingProjectId === id) {
+        handleCancelEdit();
+      }
+    }
   };
 
-  // Reset Sandbox
-  const handleResetSandbox = () => {
-    if (window.confirm("Are you sure you want to delete all custom sandbox projects? This cannot be undone.")) {
-      setCustomProjects([]);
-      localStorage.removeItem('custom_portfolio_projects');
+  // Restore System Defaults
+  const handleRestoreDefaults = () => {
+    if (window.confirm("Are you sure you want to restore the default projects? This will overwrite all custom updates, additions, and deletions.")) {
+      setProjectsList(PROJECTS);
+      localStorage.setItem('portfolio_projects_db', JSON.stringify(PROJECTS));
+      handleCancelEdit();
+      setSuccessMsg('System default projects restored!');
+      setTimeout(() => setSuccessMsg(''), 3000);
     }
   };
 
   // Copy updated code to clipboard
   const handleCopyCode = () => {
-    const allProjects = [...PROJECTS, ...customProjects];
     const generatedJs = `/**
  * Portfolio Projects Data Module
  * (Generated from Admin Dashboard)
  */
 
-export const PROJECTS = ${JSON.stringify(allProjects, null, 2)};
+export const PROJECTS = ${JSON.stringify(projectsList, null, 2)};
 `;
     navigator.clipboard.writeText(generatedJs);
     setCopiedCode(true);
@@ -178,8 +256,7 @@ export const PROJECTS = ${JSON.stringify(allProjects, null, 2)};
   };
 
   const codePreviewContent = () => {
-    const allProjects = [...PROJECTS, ...customProjects];
-    return `export const PROJECTS = ${JSON.stringify(allProjects, null, 2)};`;
+    return `export const PROJECTS = ${JSON.stringify(projectsList, null, 2)};`;
   };
 
   return (
@@ -197,11 +274,9 @@ export const PROJECTS = ${JSON.stringify(allProjects, null, 2)};
           >
             <Settings size={16} /> Cloudinary Settings
           </button>
-          {customProjects.length > 0 && (
-            <button onClick={handleResetSandbox} className="btn btn-secondary btn-danger">
-              Reset Sandbox
-            </button>
-          )}
+          <button onClick={handleRestoreDefaults} className="btn btn-secondary btn-danger">
+            Restore Defaults
+          </button>
         </div>
       </div>
 
@@ -213,6 +288,17 @@ export const PROJECTS = ${JSON.stringify(allProjects, null, 2)};
             <div className="alert alert-success fade-in">
               <Sparkles size={16} />
               <span>{successMsg}</span>
+            </div>
+          )}
+
+          {/* Edit Mode Alert Bar */}
+          {editingProjectId && (
+            <div className="alert alert-warning fade-in">
+              <Pencil size={16} />
+              <span>Editing Project Mode: Changes will update the existing project.</span>
+              <button onClick={handleCancelEdit} className="cancel-edit-x-btn" title="Cancel edit mode">
+                <X size={14} />
+              </button>
             </div>
           )}
 
@@ -251,10 +337,12 @@ export const PROJECTS = ${JSON.stringify(allProjects, null, 2)};
             </div>
           )}
 
-          {/* Add Project Form */}
+          {/* Add/Edit Project Form */}
           <div className="admin-form-card card">
-            <h2 className="admin-card-title">Add New Project</h2>
-            <form onSubmit={handleAddProject} className="admin-form">
+            <h2 className="admin-card-title">
+              {editingProjectId ? 'Modify Project Details' : 'Add New Project'}
+            </h2>
+            <form onSubmit={handleFormSubmit} className="admin-form">
               
               <div className="form-row grid-2">
                 <div className="form-group">
@@ -451,14 +539,26 @@ export const PROJECTS = ${JSON.stringify(allProjects, null, 2)};
                 </div>
               )}
 
-              <button type="submit" className="btn btn-primary form-submit-btn">
-                Add Project to Sandbox <Save size={16} style={{ marginLeft: '6px' }} />
-              </button>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button type="submit" className="btn btn-primary form-submit-btn" style={{ flex: 1 }}>
+                  {editingProjectId ? 'Save Project Changes' : 'Add Project to Database'} <Save size={16} style={{ marginLeft: '6px' }} />
+                </button>
+                {editingProjectId && (
+                  <button 
+                    type="button" 
+                    onClick={handleCancelEdit} 
+                    className="btn btn-secondary form-submit-btn"
+                    style={{ background: '#f1f5f9', border: '1px solid #cbd5e1' }}
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
             </form>
           </div>
         </div>
 
-        {/* Right Column: Code Exporter & Sandbox Management */}
+        {/* Right Column: Code Exporter & Database Management */}
         <div className="admin-sidebar-column">
           
           {/* Exporter Block */}
@@ -475,37 +575,47 @@ export const PROJECTS = ${JSON.stringify(allProjects, null, 2)};
               </button>
             </div>
             <p className="admin-card-desc" style={{ marginTop: '8px' }}>
-              Whenever you're ready to deploy to production and GitHub permanently, copy this code and overwrite the entire contents of your <strong>src/data/projects.js</strong> file!
+              Whenever you make changes, click this button to copy the generated data code. Paste it to overwrite your <strong>src/data/projects.js</strong> file and commit to GitHub to deploy permanently.
             </p>
             <div className="code-editor-pre">
               <pre><code>{codePreviewContent()}</code></pre>
             </div>
           </div>
 
-          {/* Sandbox Custom Projects manager */}
+          {/* Database Projects manager */}
           <div className="admin-manage-card card">
-            <h3 className="admin-card-title">Sandbox Projects ({customProjects.length})</h3>
-            {customProjects.length === 0 ? (
+            <h3 className="admin-card-title">Database Projects ({projectsList.length})</h3>
+            {projectsList.length === 0 ? (
               <div className="no-sandbox-msg">
                 <AlertCircle size={28} className="placeholder-icon" />
-                <p>No sandbox projects added yet. Use the builder form to construct items.</p>
+                <p>All projects have been deleted. Restore defaults or add new projects.</p>
               </div>
             ) : (
               <div className="sandbox-items-list">
-                {customProjects.map(proj => (
+                {projectsList.map(proj => (
                   <div key={proj.id} className="sandbox-item-row">
                     <img src={proj.thumbnail} alt={proj.title} className="sandbox-item-thumb" />
                     <div className="sandbox-item-info">
                       <span className="sandbox-item-title">{proj.title}</span>
                       <span className="sandbox-item-cat">{proj.category} &bull; {proj.subcategory}</span>
                     </div>
-                    <button 
-                      onClick={() => handleDeleteProject(proj.id)} 
-                      className="sandbox-delete-btn"
-                      title="Delete project"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <button 
+                        onClick={() => handleEditClick(proj)} 
+                        className="sandbox-delete-btn"
+                        style={{ color: 'var(--text-secondary)' }}
+                        title="Edit project"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteProject(proj.id)} 
+                        className="sandbox-delete-btn"
+                        title="Delete project"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

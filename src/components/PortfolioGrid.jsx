@@ -15,10 +15,14 @@ const BATCH_SIZE = 6;
 export default function PortfolioGrid() {
   const [projectsList, setProjectsList] = useState(() => {
     try {
-      const localProjects = JSON.parse(localStorage.getItem('custom_portfolio_projects') || '[]');
-      return [...PROJECTS, ...localProjects];
+      const db = localStorage.getItem('portfolio_projects_db');
+      if (!db) {
+        localStorage.setItem('portfolio_projects_db', JSON.stringify(PROJECTS));
+        return PROJECTS;
+      }
+      return JSON.parse(db);
     } catch (e) {
-      console.warn("Failed to load custom projects from localStorage:", e);
+      console.warn("Failed to load projects database from localStorage:", e);
       return PROJECTS;
     }
   });
