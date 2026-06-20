@@ -239,31 +239,64 @@ export default function ResumePage() {
 
   return (
     <div className={`resume-page-wrapper mode-${viewMode}`}>
-      {/* Interactive Control Header */}
-      <div className="resume-action-bar no-print">
-        <a href="#work" className="btn btn-secondary action-btn-back">
-          <ArrowLeft size={16} /> Back to Portfolio
-        </a>
+      {/* Interactive Control Header Container */}
+      <div className="resume-action-bar-container no-print" style={{ width: '100%', maxWidth: '1100px', display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+        <div className="resume-action-bar">
+          <a href="#work" className="btn btn-secondary action-btn-back">
+            <ArrowLeft size={16} /> Back to Portfolio
+          </a>
 
-        {/* View Mode Toggle Slider */}
-        <div className="view-mode-toggle-container">
-          <button 
-            className={`toggle-mode-btn ${viewMode === 'creative' ? 'active' : ''}`}
-            onClick={() => setViewMode('creative')}
-          >
-            <Sparkles size={14} style={{ marginRight: '6px' }} /> Interactive Web
-          </button>
-          <button 
-            className={`toggle-mode-btn ${viewMode === 'print' ? 'active' : ''}`}
-            onClick={() => setViewMode('print')}
-          >
-            PDF Print Sheet
+          {/* View Mode Toggle Slider */}
+          <div className="view-mode-toggle-container">
+            <button 
+              className={`toggle-mode-btn ${viewMode === 'creative' ? 'active' : ''}`}
+              onClick={() => setViewMode('creative')}
+            >
+              <Sparkles size={14} style={{ marginRight: '6px' }} /> Interactive Web
+            </button>
+            <button 
+              className={`toggle-mode-btn ${viewMode === 'print' ? 'active' : ''}`}
+              onClick={() => setViewMode('print')}
+            >
+              PDF Print Sheet
+            </button>
+          </div>
+
+          <button onClick={handlePrint} className="btn btn-primary action-btn-print">
+            <Printer size={16} /> Print / Save PDF
           </button>
         </div>
 
-        <button onClick={handlePrint} className="btn btn-primary action-btn-print">
-          <Printer size={16} /> Print / Save PDF
-        </button>
+        {/* Focus Selector Bar */}
+        <div className="resume-focus-bar">
+          <span className="focus-label">Customize Resume Focus:</span>
+          <div className="focus-buttons">
+            <button 
+              className={`focus-btn ${resumeFocus === 'all' ? 'active' : ''}`} 
+              onClick={() => setResumeFocus('all')}
+            >
+              All-Rounder
+            </button>
+            <button 
+              className={`focus-btn ${resumeFocus === 'web' ? 'active' : ''}`} 
+              onClick={() => setResumeFocus('web')}
+            >
+              Web Designer
+            </button>
+            <button 
+              className={`focus-btn ${resumeFocus === 'graphic' ? 'active' : ''}`} 
+              onClick={() => setResumeFocus('graphic')}
+            >
+              Graphic Designer
+            </button>
+            <button 
+              className={`focus-btn ${resumeFocus === 'video' ? 'active' : ''}`} 
+              onClick={() => setResumeFocus('video')}
+            >
+              Video Editor
+            </button>
+          </div>
+        </div>
       </div>
 
       {viewMode === 'creative' ? (
@@ -323,37 +356,6 @@ export default function ResumePage() {
             </div>
 
             <div className="banner-header-right">
-              {/* Focus Toggle Selector */}
-              <div className="resume-focus-selector-box">
-                <span className="focus-selector-label">Resume Display Focus:</span>
-                <div className="focus-selector-menu">
-                  <button 
-                    className={`focus-selector-btn ${resumeFocus === 'all' ? 'active' : ''}`}
-                    onClick={() => setResumeFocus('all')}
-                  >
-                    All-Rounder
-                  </button>
-                  <button 
-                    className={`focus-selector-btn ${resumeFocus === 'web' ? 'active' : ''}`}
-                    onClick={() => setResumeFocus('web')}
-                  >
-                    Web Designer
-                  </button>
-                  <button 
-                    className={`focus-selector-btn ${resumeFocus === 'graphic' ? 'active' : ''}`}
-                    onClick={() => setResumeFocus('graphic')}
-                  >
-                    Graphic Designer
-                  </button>
-                  <button 
-                    className={`focus-selector-btn ${resumeFocus === 'video' ? 'active' : ''}`}
-                    onClick={() => setResumeFocus('video')}
-                  >
-                    Video Editor
-                  </button>
-                </div>
-              </div>
-
               {/* Dynamic Bio */}
               <div className="banner-bio-section">
                 <p className="banner-bio-text">
@@ -502,13 +504,13 @@ export default function ResumePage() {
             {/* Top-Left Banner */}
             <div className="header-banner-left">
               <h1 className="resume-fullname">RAHUL JADHAV</h1>
-              <h2 className="resume-subtitle-text">WEB & GRAPHIC DESIGNER</h2>
+              <h2 className="resume-subtitle-text">{FOCUS_DETAILS[resumeFocus].subtitle.toUpperCase()}</h2>
             </div>
             {/* Top-Right Profile Bio */}
             <div className="header-profile-right">
               <h3 className="resume-section-title dark-title">ABOUT ME</h3>
               <p className="resume-about-text">
-                With over eight years of experience across freelance, agency, and corporate roles, I bring a well-rounded approach to UI/UX and digital design. I love combining intuitive web aesthetics with compelling graphic design to tell a brand's story. I am highly organized, comfortable juggling multiple projects, and always driven to deliver polished visuals that truly elevate a brand's online presence.
+                {FOCUS_DETAILS[resumeFocus].bio}
               </p>
             </div>
           </div>
@@ -616,19 +618,24 @@ export default function ResumePage() {
               <div className="main-resume-section">
                 <h3 className="resume-section-title">PROFESSIONAL SKILLS</h3>
                 <p className="skills-intro-paragraph">
-                  Turning creative ideas into polished realities requires a robust technical toolkit. I continually refine my mastery of industry-standard software and modern design principles to ensure my output is both visually engaging and highly functional.
+                  {resumeFocus === 'all'
+                    ? "Turning creative ideas into polished realities requires a robust technical toolkit. I continually refine my mastery of industry-standard software and modern design principles to ensure my output is both visually engaging and highly functional."
+                    : `Highlighting technical competencies related to ${FOCUS_DETAILS[resumeFocus].subtitle}.`}
                 </p>
                 <div className="resume-skills-grid">
-                  {RESUME_SKILLS.map((skill, idx) => (
-                    <div key={idx} className="resume-skill-item">
-                      <div className="skill-meta">
-                        <span className="resume-skill-name">{skill.name}</span>
+                  {RESUME_SKILLS.map((skill, idx) => {
+                    const isHighlighted = resumeFocus === 'all' || FOCUS_SKILLS_MAP[resumeFocus]?.includes(skill.name);
+                    return (
+                      <div key={idx} className={`resume-skill-item ${isHighlighted ? 'print-highlight' : 'print-dimmed'}`}>
+                        <div className="skill-meta">
+                          <span className="resume-skill-name">{skill.name}</span>
+                        </div>
+                        <div className="skill-meter-container">
+                          <div className="skill-meter-bar" style={{ width: `${skill.level}%` }}></div>
+                        </div>
                       </div>
-                      <div className="skill-meter-container">
-                        <div className="skill-meter-bar" style={{ width: `${skill.level}%` }}></div>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -636,18 +643,21 @@ export default function ResumePage() {
               <div className="main-resume-section">
                 <h3 className="resume-section-title">WORK EXPERIENCE</h3>
                 <div className="experience-list-resume">
-                  {RESUME_EXPERIENCE.map((exp, idx) => (
-                    <div key={idx} className="experience-item-resume">
-                      <div className="experience-title-row">
-                        <h4 className="experience-role-text">{exp.role} | <span className="experience-company-text">{exp.company}</span></h4>
+                  {RESUME_EXPERIENCE.map((exp, idx) => {
+                    const isHighlighted = resumeFocus === 'all' || FOCUS_EXPERIENCE_MAP[resumeFocus]?.includes(exp.id);
+                    return (
+                      <div key={idx} className={`experience-item-resume ${isHighlighted ? 'print-highlight' : 'print-dimmed'}`}>
+                        <div className="experience-title-row">
+                          <h4 className="experience-role-text">{exp.role} | <span className="experience-company-text">{exp.company}</span></h4>
+                        </div>
+                        <div className="experience-meta-row">
+                          <span className="experience-period-text">({exp.period})</span>
+                          <span className="experience-location-text">{exp.location}</span>
+                        </div>
+                        <p className="experience-desc-text">{exp.desc}</p>
                       </div>
-                      <div className="experience-meta-row">
-                        <span className="experience-period-text">({exp.period})</span>
-                        <span className="experience-location-text">{exp.location}</span>
-                      </div>
-                      <p className="experience-desc-text">{exp.desc}</p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
