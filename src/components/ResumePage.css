@@ -1109,53 +1109,6 @@
   justify-content: center;
 }
 
-.resume-focus-selector-box {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.focus-selector-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  letter-spacing: 0.05em;
-}
-
-.focus-selector-menu {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  background: var(--bg-secondary);
-  padding: 4px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
-}
-
-.focus-selector-btn {
-  background: none;
-  border: none;
-  padding: 6px 12px;
-  font-family: var(--font-heading);
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  transition: var(--transition-fast);
-}
-
-.focus-selector-btn:hover {
-  color: var(--primary);
-}
-
-.focus-selector-btn.active {
-  background-color: var(--primary);
-  color: #ffffff;
-  box-shadow: var(--shadow-sm);
-}
-
 .banner-bio-section {
   display: flex;
 }
@@ -1194,16 +1147,6 @@ body.dark-theme .banner-contact-pill:not(.no-copy):hover {
   background-color: rgba(59, 130, 246, 0.1) !important;
   border-color: rgba(59, 130, 246, 0.3) !important;
   color: #3b82f6 !important;
-}
-
-body.dark-theme .focus-selector-menu {
-  background-color: rgba(15, 23, 42, 0.3) !important;
-  border-color: rgba(71, 85, 105, 0.3) !important;
-}
-
-body.dark-theme .focus-selector-btn.active {
-  background-color: var(--accent) !important;
-  color: #ffffff !important;
 }
 
 /* Responsive adjustment for banner */

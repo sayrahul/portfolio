@@ -239,64 +239,31 @@ export default function ResumePage() {
 
   return (
     <div className={`resume-page-wrapper mode-${viewMode}`}>
-      {/* Interactive Control Header Container */}
-      <div className="resume-action-bar-container no-print" style={{ width: '100%', maxWidth: '1100px', display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
-        <div className="resume-action-bar">
-          <a href="#work" className="btn btn-secondary action-btn-back">
-            <ArrowLeft size={16} /> Back to Portfolio
-          </a>
+      {/* Interactive Control Header */}
+      <div className="resume-action-bar no-print">
+        <a href="#work" className="btn btn-secondary action-btn-back">
+          <ArrowLeft size={16} /> Back to Portfolio
+        </a>
 
-          {/* View Mode Toggle Slider */}
-          <div className="view-mode-toggle-container">
-            <button 
-              className={`toggle-mode-btn ${viewMode === 'creative' ? 'active' : ''}`}
-              onClick={() => setViewMode('creative')}
-            >
-              <Sparkles size={14} style={{ marginRight: '6px' }} /> Interactive Web
-            </button>
-            <button 
-              className={`toggle-mode-btn ${viewMode === 'print' ? 'active' : ''}`}
-              onClick={() => setViewMode('print')}
-            >
-              PDF Print Sheet
-            </button>
-          </div>
-
-          <button onClick={handlePrint} className="btn btn-primary action-btn-print">
-            <Printer size={16} /> Print / Save PDF
+        {/* View Mode Toggle Slider */}
+        <div className="view-mode-toggle-container">
+          <button 
+            className={`toggle-mode-btn ${viewMode === 'creative' ? 'active' : ''}`}
+            onClick={() => setViewMode('creative')}
+          >
+            <Sparkles size={14} style={{ marginRight: '6px' }} /> Interactive Web
+          </button>
+          <button 
+            className={`toggle-mode-btn ${viewMode === 'print' ? 'active' : ''}`}
+            onClick={() => setViewMode('print')}
+          >
+            PDF Print Sheet
           </button>
         </div>
 
-        {/* Focus Selector Bar */}
-        <div className="resume-focus-bar">
-          <span className="focus-label">Customize Resume Focus:</span>
-          <div className="focus-buttons">
-            <button 
-              className={`focus-btn ${resumeFocus === 'all' ? 'active' : ''}`} 
-              onClick={() => setResumeFocus('all')}
-            >
-              All-Rounder
-            </button>
-            <button 
-              className={`focus-btn ${resumeFocus === 'web' ? 'active' : ''}`} 
-              onClick={() => setResumeFocus('web')}
-            >
-              Web Designer
-            </button>
-            <button 
-              className={`focus-btn ${resumeFocus === 'graphic' ? 'active' : ''}`} 
-              onClick={() => setResumeFocus('graphic')}
-            >
-              Graphic Designer
-            </button>
-            <button 
-              className={`focus-btn ${resumeFocus === 'video' ? 'active' : ''}`} 
-              onClick={() => setResumeFocus('video')}
-            >
-              Video Editor
-            </button>
-          </div>
-        </div>
+        <button onClick={handlePrint} className="btn btn-primary action-btn-print">
+          <Printer size={16} /> Print / Save PDF
+        </button>
       </div>
 
       {viewMode === 'creative' ? (
