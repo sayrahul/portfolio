@@ -134,34 +134,45 @@ export default function AdminDashboard() {
     }
 
     const imageUrls = [];
-    if (category === 'Graphic Design') {
-      if (beforeImage) imageUrls.push(beforeImage);
-      if (afterImage) imageUrls.push(afterImage);
-    }
-    if (imageUrls.length === 0 && thumbnail) {
-      imageUrls.push(thumbnail);
-    }
+    if (thumbnail) imageUrls.push(thumbnail);
+    if (webScreenshot) imageUrls.push(webScreenshot);
+    if (beforeImage) imageUrls.push(beforeImage);
+    if (afterImage) imageUrls.push(afterImage);
+    if (poster) imageUrls.push(poster);
 
-    if (imageUrls.length === 0) {
-      alert("Please upload or enter at least one image URL (Before, After, or Thumbnail) first so the AI can analyze it!");
+    const hasAssets = imageUrls.length > 0 || liveUrl || videoUrl || title;
+    if (!hasAssets) {
+      alert("Please enter or upload at least one project asset (Thumbnail, Screenshot, Before/After image, Poster, Live URL, or Video URL) first so the AI can analyze it!");
       return;
     }
 
     setIsAiLoading(true);
-    setSuccessMsg('AI is analyzing images...');
+    setSuccessMsg('AI is analyzing project assets...');
 
     try {
+      let promptText = "Analyze the provided project assets (images, URLs, etc.) and generate portfolio metadata. ";
+      
+      const details = [];
+      if (liveUrl) details.push(`- Live website URL: ${liveUrl}`);
+      if (videoUrl) details.push(`- Video URL: ${videoUrl}`);
+      if (title) details.push(`- Current title (draft): ${title}`);
+      
+      if (details.length > 0) {
+        promptText += "\nHere are the non-image details provided:\n" + details.join("\n") + "\n";
+      }
+      
+      promptText += "\nDetermine the most appropriate category, a clean creative project title, a specific sub-category/tag, and the tools/technologies used.\n\n" +
+                    "Respond with ONLY a valid JSON object. Do not include markdown code blocks, backticks, or any other wrapper text.\n" +
+                    "Schema:\n" +
+                    "{\n" +
+                    "  \"category\": \"Must be exactly one of: 'Web Design', 'Graphic Design', or 'Video Editing'\",\n" +
+                    "  \"title\": \"A short, clean, creative project title (max 45 characters)\",\n" +
+                    "  \"subcategory\": \"A single short sub-category/genre tag (e.g. 'SaaS Landing Page', 'E-commerce', 'Photo Retouching', 'Double Exposure', 'YouTube Thumbnail', 'Cinematic B-Roll', 'Promo Video')\",\n" +
+                    "  \"tools\": [\"Array of tools used, chosen or inferred from: Figma, Adobe Photoshop, Adobe Illustrator, Adobe After Effects, Adobe Premiere Pro, DaVinci Resolve, Lightroom, Adobe InDesign, React, Tailwind CSS, HTML/CSS, Vanilla CSS, UI/UX Design, Sound Design\"]\n" +
+                    "}";
+
       const parts = [
-        {
-          text: "Analyze these graphic design image(s) and generate portfolio metadata as a JSON object. " +
-                "Respond with ONLY a valid JSON object. Do not include markdown code blocks, backticks, or any other wrapper text. " +
-                "Schema:\n" +
-                "{\n" +
-                "  \"title\": \"A short creative project name (max 45 chars)\",\n" +
-                "  \"subcategory\": \"A single short sub-category/genre tag (e.g. Retouching, Photo Editing, Digital Art, Logo Design, Branding, Flyer Design)\",\n" +
-                "  \"tools\": [\"Array of tools used, chosen from: Figma, Adobe Photoshop, Adobe Illustrator, Adobe After Effects, Adobe Premiere Pro, DaVinci Resolve, Lightroom, Adobe InDesign\"]\n" +
-                "}"
-        }
+        { text: promptText }
       ];
 
       for (const url of imageUrls) {
@@ -199,6 +210,9 @@ export default function AdminDashboard() {
       const cleanJsonStr = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
       const result = JSON.parse(cleanJsonStr);
 
+      if (result.category && ["Web Design", "Graphic Design", "Video Editing"].includes(result.category)) {
+        setCategory(result.category);
+      }
       if (result.title) setTitle(result.title);
       if (result.subcategory) setSubcategory(result.subcategory);
       if (result.tools && Array.isArray(result.tools)) {
@@ -210,7 +224,7 @@ export default function AdminDashboard() {
 
     } catch (err) {
       console.error("AI Generation failed:", err);
-      alert("AI Generation failed. Make sure your Gemini API Key is valid and images are accessible.");
+      alert("AI Generation failed. Make sure your Gemini API Key is valid and images/assets are accessible.");
     } finally {
       setIsAiLoading(false);
     }
@@ -893,7 +907,7 @@ export default function AdminDashboard() {
               <h2 className="admin-card-title" style={{ marginBottom: 0 }}>
                 {editingProjectId ? 'Modify Project Details' : 'Add New Project'}
               </h2>
-              {category === 'Graphic Design' && (beforeImage || afterImage || thumbnail) && (
+              {(thumbnail || webScreenshot || beforeImage || afterImage || poster || liveUrl || videoUrl || title) && (
                 <button
                   type="button"
                   onClick={generateMetadataWithAI}
@@ -911,7 +925,7 @@ export default function AdminDashboard() {
                   {isAiLoading ? (
                     <>
                       <RefreshCw size={14} className="spin-icon" style={{ color: '#9333ea', marginRight: '6px' }} />
-                      <span>Analyzing Images...</span>
+                      <span>Analyzing Assets...</span>
                     </>
                   ) : (
                     <>
