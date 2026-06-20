@@ -148,10 +148,17 @@ export default function PortfolioGrid() {
   return (
     <section id="work" className="portfolio-section">
       <div className="container">
-        <h2 className="section-title">Selected Work</h2>
-        <p className="section-subtitle">
-          Explore a curated selection of corporate web development, graphic assets, and video showreels.
-        </p>
+        <motion.div
+          initial={{ opacity: 0, y: 25 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.6 }}
+        >
+          <h2 className="section-title">Selected Work</h2>
+          <p className="section-subtitle">
+            Explore a curated selection of corporate web development, graphic assets, and video showreels.
+          </p>
+        </motion.div>
 
         {/* Interactive Search Console */}
         <div className="search-bar-wrapper">

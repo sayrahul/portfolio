@@ -974,3 +974,269 @@
     color: #2563eb !important;
   }
 }
+
+/* Unified Dashboard Banner Header */
+.dashboard-banner-header {
+  grid-column: span 2;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 40px;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  margin-bottom: 32px;
+}
+
+.banner-header-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.banner-profile-info {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.avatar-initials-large {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f2c111 0%, #d97706 100%);
+  color: #fff;
+  font-family: var(--font-heading);
+  font-size: 2.2rem;
+  font-weight: 800;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: var(--shadow-md);
+  border: 3px solid #ffffff;
+}
+
+.banner-name-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.banner-fullname-text {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 6px;
+  letter-spacing: -0.02em;
+}
+
+.banner-subtitle-tag {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.banner-social-row {
+  display: flex;
+  gap: 12px;
+}
+
+.social-icon-link {
+  color: var(--text-muted);
+  transition: var(--transition-fast);
+}
+
+.social-icon-link:hover {
+  color: var(--accent);
+  transform: scale(1.1);
+}
+
+/* Contacts Pill Grid */
+.banner-contacts-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.banner-contact-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 100px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.banner-contact-pill:not(.no-copy):hover {
+  background-color: var(--accent-light);
+  border-color: rgba(37, 99, 235, 0.2);
+  color: var(--accent);
+}
+
+.banner-contact-pill.no-copy {
+  cursor: default;
+}
+
+.pill-copy-indicator {
+  opacity: 0.5;
+  margin-left: 2px;
+  display: flex;
+  align-items: center;
+}
+
+.banner-contact-pill:hover .pill-copy-indicator {
+  opacity: 1;
+}
+
+/* Right Header Section */
+.banner-header-right {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  border-left: 1px solid var(--border-color);
+  padding-left: 40px;
+  justify-content: center;
+}
+
+.resume-focus-selector-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.focus-selector-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.focus-selector-menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  background: var(--bg-secondary);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.focus-selector-btn {
+  background: none;
+  border: none;
+  padding: 6px 12px;
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: var(--transition-fast);
+}
+
+.focus-selector-btn:hover {
+  color: var(--primary);
+}
+
+.focus-selector-btn.active {
+  background-color: var(--primary);
+  color: #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+
+.banner-bio-section {
+  display: flex;
+}
+
+.banner-bio-text {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* Equalized Dashboard Grid Columns */
+.creative-resume-dashboard .dashboard-grid {
+  grid-template-columns: 1fr 1.25fr;
+}
+
+/* Focused Skill State styling overrides */
+.dashboard-skill-card.dimmed-skill {
+  opacity: 0.45;
+  filter: grayscale(0.2);
+}
+
+/* Dark mode overrides for new components */
+body.dark-theme .dashboard-banner-header {
+  background: rgba(30, 41, 59, 0.4) !important;
+  border-color: rgba(71, 85, 105, 0.3) !important;
+}
+
+body.dark-theme .banner-contact-pill {
+  background-color: rgba(15, 23, 42, 0.4) !important;
+  border-color: rgba(71, 85, 105, 0.3) !important;
+  color: var(--text-secondary) !important;
+}
+
+body.dark-theme .banner-contact-pill:not(.no-copy):hover {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  color: #3b82f6 !important;
+}
+
+body.dark-theme .focus-selector-menu {
+  background-color: rgba(15, 23, 42, 0.3) !important;
+  border-color: rgba(71, 85, 105, 0.3) !important;
+}
+
+body.dark-theme .focus-selector-btn.active {
+  background-color: var(--accent) !important;
+  color: #ffffff !important;
+}
+
+/* Responsive adjustment for banner */
+@media (max-width: 992px) {
+  .dashboard-banner-header {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 30px;
+  }
+  .banner-header-right {
+    border-left: none;
+    padding-left: 0;
+    border-top: 1px solid var(--border-color);
+    padding-top: 32px;
+  }
+  
+  .creative-resume-dashboard .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 576px) {
+  .banner-profile-info {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+  .banner-name-section {
+    align-items: center;
+  }
+  .banner-fullname-text {
+    font-size: 1.8rem;
+  }
+  .banner-contacts-container {
+    justify-content: center;
+  }
+}

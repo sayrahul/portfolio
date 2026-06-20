@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, useScroll } from 'framer-motion';
 import Header from './components/Header';
+import Hero from './components/Hero';
 import PortfolioGrid from './components/PortfolioGrid';
 import ResumePage from './components/ResumePage';
 import ContactPage from './components/ContactPage';
@@ -71,6 +72,7 @@ export default function App() {
         <>
           <Header />
           <main style={{ paddingTop: '80px' }}>
+            <Hero />
             <PortfolioGrid />
           </main>
           

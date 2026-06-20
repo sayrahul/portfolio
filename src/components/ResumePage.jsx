@@ -154,8 +154,40 @@ const RESUME_EDUCATION = [
   }
 ];
 
+const FOCUS_SKILLS_MAP = {
+  web: ["UI/UX Design", "Prototyping", "Web Design", "Front-End Design"],
+  graphic: ["UI/UX Design", "Prototyping", "Graphic & Visual Design", "Adobe Creative Suite"],
+  video: ["Motion Graphics & After Effects", "Adobe Creative Suite", "Graphic & Visual Design"]
+};
+
+const FOCUS_EXPERIENCE_MAP = {
+  web: ["MGT-Commerce", "IPD Business", "Aspitek"],
+  graphic: ["OceanSphere", "Virtual Tech Gurus", "SVA", "Info Edge"],
+  video: ["Info Edge", "SVA"]
+};
+
+const FOCUS_DETAILS = {
+  all: {
+    subtitle: "Web & Graphic Designer",
+    bio: "With over eight years of experience across freelance, agency, and corporate roles, I bring a well-rounded approach to UI/UX and digital design. I love combining intuitive web aesthetics with compelling graphic design to tell a brand's story."
+  },
+  web: {
+    subtitle: "Frontend Web Designer & Engineer",
+    bio: "A detail-oriented frontend designer focusing on crafting clean, responsive, and high-performance React web interfaces. Experienced in translating wireframes into semantic code, designing modular layout systems, and building custom components."
+  },
+  graphic: {
+    subtitle: "Senior Graphic & Brand Visual Designer",
+    bio: "A creative visual designer specializing in brand identity systems, high-fidelity graphics, vector assets, and marketing layouts. Over 8 years of experience designing billboard layouts, corporate pitch decks, and digital collateral."
+  },
+  video: {
+    subtitle: "Cinematic Video Editor & Motion Designer",
+    bio: "A creative motion designer and editor delivering high-engagement video assets. Expert in color grading, sound design, and building custom After Effects motion graphics for social campaigns, commercials, and brand promotion."
+  }
+};
+
 export default function ResumePage() {
   const [viewMode, setViewMode] = useState('creative'); // 'creative' or 'print'
+  const [resumeFocus, setResumeFocus] = useState('all'); // 'all', 'web', 'graphic', 'video'
   const [copiedField, setCopiedField] = useState(null);
   const [hoveredSkill, setHoveredSkill] = useState(null);
   const [expandedExperience, setExpandedExperience] = useState({});
@@ -170,6 +202,20 @@ export default function ResumePage() {
       setSkillsAnimated(false);
     }
   }, [viewMode]);
+
+  // Handle focus auto-expansion
+  useEffect(() => {
+    if (resumeFocus === 'all') {
+      setExpandedExperience({});
+    } else {
+      const expIds = FOCUS_EXPERIENCE_MAP[resumeFocus] || [];
+      const expanded = {};
+      expIds.forEach(id => {
+        expanded[id] = true;
+      });
+      setExpandedExperience(expanded);
+    }
+  }, [resumeFocus]);
 
   const handlePrint = () => {
     setViewMode('print');
@@ -224,147 +270,133 @@ export default function ResumePage() {
         /* ==================== INTERACTIVE CREATIVE VIEW ==================== */
         <div className="creative-resume-dashboard container fade-in">
           
-          {/* Main Grid: Left Sidebar & Right Content */}
+          {/* 1. Unified Full-Width Interactive Profile Header Banner */}
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="dashboard-banner-header card"
+          >
+            <div className="banner-header-left">
+              <div className="banner-profile-info">
+                <div className="avatar-initials-large">RJ</div>
+                <div className="banner-name-section">
+                  <h1 className="banner-fullname-text">Rahul Jadhav</h1>
+                  <h2 className="banner-subtitle-tag">{FOCUS_DETAILS[resumeFocus].subtitle}</h2>
+                  <div className="banner-social-row">
+                    <a href="https://behance.net/sayrahul" target="_blank" rel="noopener noreferrer" className="social-icon-link" title="Behance"><BehanceIcon /></a>
+                    <a href="https://linkedin.com/in/rahuljadhav44" target="_blank" rel="noopener noreferrer" className="social-icon-link" title="LinkedIn"><LinkedinIcon /></a>
+                    <a href="https://github.com/sayrahul" target="_blank" rel="noopener noreferrer" className="social-icon-link" title="GitHub"><GithubIcon /></a>
+                    <a href="https://youtube.com/@Say_Rahul" target="_blank" rel="noopener noreferrer" className="social-icon-link" title="YouTube"><YoutubeIcon /></a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dynamic Contact Bar */}
+              <div className="banner-contacts-container">
+                <div className="banner-contact-pill" onClick={() => handleCopy("+919595997711", "phone")} title="Click to copy phone">
+                  <Phone size={13} />
+                  <span>+91 9595997711</span>
+                  <div className="pill-copy-indicator">
+                    {copiedField === 'phone' ? <Check size={11} className="check-icon" /> : <Copy size={10} />}
+                  </div>
+                </div>
+                <div className="banner-contact-pill" onClick={() => handleCopy("rahuljadhav44@gmail.com", "email")} title="Click to copy email">
+                  <Mail size={13} />
+                  <span>rahuljadhav44@gmail.com</span>
+                  <div className="pill-copy-indicator">
+                    {copiedField === 'email' ? <Check size={11} className="check-icon" /> : <Copy size={10} />}
+                  </div>
+                </div>
+                <div className="banner-contact-pill" onClick={() => handleCopy("https://sayrahul.github.io/sayrahul/", "website")} title="Click to copy website">
+                  <Globe size={13} />
+                  <span>sayrahul.github.io/sayrahul/</span>
+                  <div className="pill-copy-indicator">
+                    {copiedField === 'website' ? <Check size={11} className="check-icon" /> : <Copy size={10} />}
+                  </div>
+                </div>
+                <div className="banner-contact-pill no-copy">
+                  <MapPin size={13} />
+                  <span>Sambhajinagar, MH</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="banner-header-right">
+              {/* Focus Toggle Selector */}
+              <div className="resume-focus-selector-box">
+                <span className="focus-selector-label">Resume Display Focus:</span>
+                <div className="focus-selector-menu">
+                  <button 
+                    className={`focus-selector-btn ${resumeFocus === 'all' ? 'active' : ''}`}
+                    onClick={() => setResumeFocus('all')}
+                  >
+                    All-Rounder
+                  </button>
+                  <button 
+                    className={`focus-selector-btn ${resumeFocus === 'web' ? 'active' : ''}`}
+                    onClick={() => setResumeFocus('web')}
+                  >
+                    Web Designer
+                  </button>
+                  <button 
+                    className={`focus-selector-btn ${resumeFocus === 'graphic' ? 'active' : ''}`}
+                    onClick={() => setResumeFocus('graphic')}
+                  >
+                    Graphic Designer
+                  </button>
+                  <button 
+                    className={`focus-selector-btn ${resumeFocus === 'video' ? 'active' : ''}`}
+                    onClick={() => setResumeFocus('video')}
+                  >
+                    Video Editor
+                  </button>
+                </div>
+              </div>
+
+              {/* Dynamic Bio */}
+              <div className="banner-bio-section">
+                <p className="banner-bio-text">
+                  {FOCUS_DETAILS[resumeFocus].bio}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* 2. Main Two-Column Grid Content */}
           <div className="dashboard-grid">
             
-            {/* Left Profile Panel (Framer Motion Slide In) */}
+            {/* Left Column: Interactive Skills Grid */}
             <motion.div 
-              initial={{ opacity: 0, x: -30 }}
+              initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="dashboard-sidebar-panel card"
+              transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+              className="dashboard-main-card card"
             >
-              <div className="sidebar-profile-header">
-                <div className="avatar-initials">RJ</div>
-                <h1 className="sidebar-fullname-text">Rahul Jadhav</h1>
-                <h2 className="sidebar-subtitle-tag">Web & Graphic Designer</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <h3 className="dashboard-section-header" style={{ marginBottom: 0 }}>Interactive Skills Grid</h3>
+                {resumeFocus === 'all' && (
+                  <span className="badge" style={{ textTransform: 'none' }}>Hover skill to find jobs</span>
+                )}
               </div>
-
-              {/* Quick Copy Contact Channels */}
-              <div className="sidebar-dashboard-section">
-                <h3 className="section-small-title">Contact Channels</h3>
-                <div className="clipboard-channels-list">
-                  <div 
-                    className="clipboard-channel-card" 
-                    onClick={() => handleCopy("+919595997711", "phone")}
-                    title="Click to copy phone"
-                  >
-                    <div className="channel-box-icon"><Phone size={14} /></div>
-                    <div className="channel-box-text">
-                      <span className="channel-box-label">Mobile</span>
-                      <span className="channel-box-val">+91 9595997711</span>
-                    </div>
-                    <div className="copy-action-indicator">
-                      {copiedField === 'phone' ? <Check size={14} className="check-icon" /> : <Copy size={12} />}
-                    </div>
-                  </div>
-
-                  <div 
-                    className="clipboard-channel-card" 
-                    onClick={() => handleCopy("rahuljadhav44@gmail.com", "email")}
-                    title="Click to copy email"
-                  >
-                    <div className="channel-box-icon"><Mail size={14} /></div>
-                    <div className="channel-box-text">
-                      <span className="channel-box-label">Email</span>
-                      <span className="channel-box-val">rahuljadhav44@gmail.com</span>
-                    </div>
-                    <div className="copy-action-indicator">
-                      {copiedField === 'email' ? <Check size={14} className="check-icon" /> : <Copy size={12} />}
-                    </div>
-                  </div>
-
-                  <div 
-                    className="clipboard-channel-card" 
-                    onClick={() => handleCopy("https://sayrahul.github.io/sayrahul/", "website")}
-                    title="Click to copy site link"
-                  >
-                    <div className="channel-box-icon"><Globe size={14} /></div>
-                    <div className="channel-box-text">
-                      <span className="channel-box-label">Website</span>
-                      <span className="channel-box-val">sayrahul.github.io/sayrahul/</span>
-                    </div>
-                    <div className="copy-action-indicator">
-                      {copiedField === 'website' ? <Check size={14} className="check-icon" /> : <Copy size={12} />}
-                    </div>
-                  </div>
-
-                  <div className="clipboard-channel-card no-click">
-                    <div className="channel-box-icon"><MapPin size={14} /></div>
-                    <div className="channel-box-text">
-                      <span className="channel-box-label">Address</span>
-                      <span className="channel-box-val">Chh. Sambhajinagar, MH</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Profiles */}
-              <div className="sidebar-dashboard-section">
-                <h3 className="section-small-title">Professional Networks</h3>
-                <div className="social-dashboard-grid">
-                  <a href="https://behance.net/sayrahul" target="_blank" rel="noopener noreferrer" className="social-dash-badge behance">
-                    <BehanceIcon /> <span>Behance</span>
-                  </a>
-                  <a href="https://linkedin.com/in/rahuljadhav44" target="_blank" rel="noopener noreferrer" className="social-dash-badge linkedin">
-                    <LinkedinIcon /> <span>LinkedIn</span>
-                  </a>
-                  <a href="https://github.com/sayrahul" target="_blank" rel="noopener noreferrer" className="social-dash-badge github">
-                    <GithubIcon /> <span>GitHub</span>
-                  </a>
-                  <a href="https://youtube.com/@Say_Rahul" target="_blank" rel="noopener noreferrer" className="social-dash-badge youtube">
-                    <YoutubeIcon /> <span>YouTube</span>
-                  </a>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Right Dashboard Area (Framer Motion Staggered entrance) */}
-            <motion.div 
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="dashboard-content-area"
-            >
+              <p className="skills-intro-paragraph" style={{ marginBottom: '24px' }}>
+                {resumeFocus === 'all' 
+                  ? "Hovering over any skill highlights the specific companies on your timeline where you applied this competency."
+                  : `Currently highlighting technical competencies related to ${FOCUS_DETAILS[resumeFocus].subtitle}.`}
+              </p>
               
-              {/* Profile Card */}
-              <motion.div 
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.1 }}
-                className="dashboard-main-card card"
-              >
-                <h3 className="dashboard-section-header">About Me</h3>
-                <p className="dashboard-bio-text">
-                  With over eight years of experience across freelance, agency, and corporate roles, I bring a well-rounded approach to UI/UX and digital design. I love combining intuitive web aesthetics with compelling graphic design to tell a brand's story.
-                </p>
-                <p className="dashboard-bio-text">
-                  I am highly organized, comfortable juggling multiple projects, and always driven to deliver polished visuals that truly elevate a brand's online presence.
-                </p>
-              </motion.div>
+              <div className="dashboard-skills-grid">
+                {RESUME_SKILLS.map((skill, idx) => {
+                  const isHighlightedByFocus = resumeFocus !== 'all' && FOCUS_SKILLS_MAP[resumeFocus]?.includes(skill.name);
+                  const isDimmedByFocus = resumeFocus !== 'all' && !isHighlightedByFocus;
+                  const isHovered = hoveredSkill === skill.name;
 
-              {/* Skills Interactive Panel */}
-              <motion.div 
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.2 }}
-                className="dashboard-main-card card"
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <h3 className="dashboard-section-header" style={{ marginBottom: 0 }}>Interactive Skills Grid</h3>
-                  <span className="badge" style={{ textTransform: 'none' }}>Hover skill to see matching experience</span>
-                </div>
-                <p className="skills-intro-paragraph" style={{ marginBottom: '24px' }}>
-                  Hovering over any skill highlights the specific companies on your timeline where you applied this competency.
-                </p>
-                
-                <div className="dashboard-skills-grid">
-                  {RESUME_SKILLS.map((skill, idx) => (
+                  return (
                     <div 
                       key={idx} 
-                      className={`dashboard-skill-card ${hoveredSkill === skill.name ? 'focused' : ''}`}
-                      onMouseEnter={() => setHoveredSkill(skill.name)}
-                      onMouseLeave={() => setHoveredSkill(null)}
+                      className={`dashboard-skill-card ${isHovered || isHighlightedByFocus ? 'focused' : ''} ${isDimmedByFocus ? 'dimmed-skill' : ''}`}
+                      onMouseEnter={() => resumeFocus === 'all' && setHoveredSkill(skill.name)}
+                      onMouseLeave={() => resumeFocus === 'all' && setHoveredSkill(null)}
                     >
                       <div className="skill-card-meta">
                         <span className="skill-card-name">{skill.name}</span>
@@ -377,25 +409,34 @@ export default function ResumePage() {
                         ></div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </motion.div>
+                  );
+                })}
+              </div>
+            </motion.div>
 
-              {/* Experience timeline with expanding nodes */}
-              <motion.div 
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.3 }}
-                className="dashboard-main-card card"
-              >
+            {/* Right Column: Timeline Experience & Education */}
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+              className="dashboard-content-area"
+            >
+              {/* Experience Timeline */}
+              <div className="dashboard-main-card card">
                 <h3 className="dashboard-section-header">Professional Experience</h3>
                 <p className="skills-intro-paragraph" style={{ marginBottom: '24px' }}>
                   Click on any experience card to expand its bullet achievements and detailed outputs.
                 </p>
                 <div className="experience-dashboard-timeline">
                   {RESUME_EXPERIENCE.map((exp, idx) => {
-                    const isHighlighted = hoveredSkill && RESUME_SKILLS.find(s => s.name === hoveredSkill)?.usedAt.includes(exp.id);
-                    const isDimmed = hoveredSkill && !isHighlighted;
+                    // Hover highlight in All-Rounder mode
+                    const isHoverHighlighted = hoveredSkill && RESUME_SKILLS.find(s => s.name === hoveredSkill)?.usedAt.includes(exp.id);
+                    // Focus highlight in themed modes
+                    const isFocusHighlighted = resumeFocus !== 'all' && FOCUS_EXPERIENCE_MAP[resumeFocus]?.includes(exp.id);
+                    
+                    const isHighlighted = isHoverHighlighted || isFocusHighlighted;
+                    
+                    const isDimmed = (hoveredSkill && !isHoverHighlighted) || (resumeFocus !== 'all' && !isFocusHighlighted);
                     const isExpanded = !!expandedExperience[exp.id];
 
                     return (
@@ -432,15 +473,10 @@ export default function ResumePage() {
                     );
                   })}
                 </div>
-              </motion.div>
+              </div>
 
               {/* Education Grid Card */}
-              <motion.div 
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.4 }}
-                className="dashboard-main-card card"
-              >
+              <div className="dashboard-main-card card">
                 <h3 className="dashboard-section-header">Education History</h3>
                 <div className="education-dashboard-grid">
                   {RESUME_EDUCATION.map((edu, idx) => (
@@ -454,12 +490,9 @@ export default function ResumePage() {
                     </div>
                   ))}
                 </div>
-              </motion.div>
-
+              </div>
             </motion.div>
-
           </div>
-
         </div>
       ) : (
         /* ==================== A4 CLEAN PRINT SHEET VIEW ==================== */
