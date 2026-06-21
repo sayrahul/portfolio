@@ -1,0 +1,72 @@
+.spotlight-card {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+body.dark-theme .spotlight-card {
+  background-color: rgba(30, 41, 59, 0.45) !important;
+  border: 1px solid rgba(71, 85, 105, 0.25) !important;
+}
+
+.spotlight-card-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+}
+
+/* Background spotlight glow inside the card content */
+.spotlight-card-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    320px circle at var(--mouse-x, 0px) var(--mouse-y, 0px),
+    rgba(37, 99, 235, 0.08),
+    transparent 80%
+  );
+  transition: opacity 0.4s ease;
+}
+
+body.dark-theme .spotlight-card-glow {
+  background: radial-gradient(
+    320px circle at var(--mouse-x, 0px) var(--mouse-y, 0px),
+    rgba(99, 102, 241, 0.15),
+    transparent 80%
+  );
+}
+
+/* Border spotlight highlight utilizing Webkit mask layout compositing */
+.spotlight-card-border {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 3;
+  border: 1.5px solid transparent;
+  background: radial-gradient(
+    250px circle at var(--mouse-x, 0px) var(--mouse-y, 0px),
+    rgba(37, 99, 235, 0.5),
+    transparent 80%
+  ) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  transition: opacity 0.4s ease;
+}
+
+body.dark-theme .spotlight-card-border {
+  background: radial-gradient(
+    250px circle at var(--mouse-x, 0px) var(--mouse-y, 0px),
+    rgba(147, 51, 234, 0.7),
+    transparent 80%
+  ) border-box;
+}

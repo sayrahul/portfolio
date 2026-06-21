@@ -57,14 +57,20 @@ export default function Header() {
         </nav>
 
         {/* Mobile Navigation Toggle */}
-        <button className="nav-toggle" onClick={toggleMenu} aria-label="Toggle menu">
+        <button 
+          className="nav-toggle" 
+          onClick={toggleMenu} 
+          aria-label="Toggle menu"
+          aria-expanded={isOpen}
+          aria-controls="mobile-nav-menu"
+        >
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="nav-mobile fade-in">
+        <div id="mobile-nav-menu" className="nav-mobile fade-in">
           <a href="#work" onClick={toggleMenu}>Portfolio</a>
           <a href="#/resume" onClick={toggleMenu}>Resume</a>
           <a href="#/contact" onClick={toggleMenu} className="btn btn-primary">Get In Touch</a>

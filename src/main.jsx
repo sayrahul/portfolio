@@ -9,8 +9,8 @@ createRoot(document.getElementById('root')).render(
   </StrictMode>,
 )
 
-// PWA Service Worker Registration
-if ('serviceWorker' in navigator) {
+// PWA Service Worker Registration (only in production to avoid dev cache issues)
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then(reg => {

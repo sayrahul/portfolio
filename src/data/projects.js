@@ -11,7 +11,7 @@
  * - tools: array of strings of technologies used
  * - iconType: "web" | "design" | "video"
  * - (Optional) liveUrl: link for Web Design
- * - (Optional) beforeImage & afterImage: links for Graphic Design Before/After sliders
+ * - (Optional) mainImage: link for Graphic Design / Web Design full preview images
  * - (Optional) videoUrl & poster: links for Video Editing players
  */
 
@@ -34,8 +34,7 @@ export const PROJECTS = [
     thumbnail: "https://images.unsplash.com/photo-1542744094-3a31f103e35f?w=800&auto=format&fit=crop&q=80",
     tools: ["Adobe Photoshop", "Lightroom"],
     iconType: "design",
-    beforeImage: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop&q=80",
-    afterImage: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&auto=format&fit=crop&q=80"
+    mainImage: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&auto=format&fit=crop&q=80"
   },
   {
     id: "video-reel-1",
@@ -66,8 +65,7 @@ export const PROJECTS = [
     thumbnail: "https://images.unsplash.com/photo-1511920170033-f8396924c348?w=800&auto=format&fit=crop&q=80",
     tools: ["Photoshop", "Illustrator"],
     iconType: "design",
-    beforeImage: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&auto=format&fit=crop&q=80",
-    afterImage: "https://images.unsplash.com/photo-1498804103079-a6351b050096?w=800&auto=format&fit=crop&q=80"
+    mainImage: "https://images.unsplash.com/photo-1498804103079-a6351b050096?w=800&auto=format&fit=crop&q=80"
   },
   {
     id: "web-ecom-1",
@@ -98,7 +96,6 @@ export const PROJECTS = [
     thumbnail: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&auto=format&fit=crop&q=80",
     tools: ["Illustrator", "Photoshop", "InDesign"],
     iconType: "design",
-    beforeImage: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&auto=format&fit=crop&q=80",
-    afterImage: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&auto=format&fit=crop&q=80"
+    mainImage: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&auto=format&fit=crop&q=80"
   }
 ];

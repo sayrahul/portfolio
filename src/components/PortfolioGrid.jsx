@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { X, ExternalLink, Film, Paintbrush, Monitor, Eye, Search, Pencil, Trash2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, ExternalLink, Film, Paintbrush, Monitor, Eye, Search, Pencil, Trash2, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import CustomPlayer from './CustomPlayer';
-import BeforeAfterSlider from './BeforeAfterSlider';
 import { PROJECTS } from '../data/projects';
 import { getOptimizedImageUrl } from '../utils/mediaOptimizer';
+import Magnetic from './Magnetic';
 import './PortfolioGrid.css';
 
 const CATEGORIES = ["All", "Web Design", "Graphic Design", "Video Editing"];
@@ -26,6 +26,22 @@ export default function PortfolioGrid() {
       return PROJECTS;
     }
   });
+
+  // Listen for database updates from other parts of the app (like the background importer)
+  useEffect(() => {
+    const handleDbUpdate = () => {
+      try {
+        const db = localStorage.getItem('portfolio_projects_db');
+        if (db) {
+          setProjectsList(JSON.parse(db));
+        }
+      } catch (e) {
+        console.warn("Failed to reload projects database from localStorage:", e);
+      }
+    };
+    window.addEventListener('portfolio_db_updated', handleDbUpdate);
+    return () => window.removeEventListener('portfolio_db_updated', handleDbUpdate);
+  }, []);
 
   const [activeFilter, setActiveFilter] = useState("All");
   const [activeSubFilter, setActiveSubFilter] = useState("All");
@@ -79,6 +95,37 @@ export default function PortfolioGrid() {
 
   const filteredProjects = getFilteredProjects();
 
+  const observerTargetRef = useRef(null);
+
+  // Intersection Observer for Infinite Scroll
+  useEffect(() => {
+    const target = observerTargetRef.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount(prev => {
+            if (prev < filteredProjects.length) {
+              return prev + BATCH_SIZE;
+            }
+            return prev;
+          });
+        }
+      },
+      {
+        root: null,
+        rootMargin: '150px',
+        threshold: 0.1
+      }
+    );
+
+    observer.observe(target);
+    return () => {
+      if (target) observer.unobserve(target);
+    };
+  }, [filteredProjects.length]);
+
   // 2. Dynamic Count Calculations
   const getCategoryCount = (category) => {
     return projectsList.filter(project => {
@@ -108,9 +155,7 @@ export default function PortfolioGrid() {
 
   const subCategories = getSubcategories();
 
-  const handleLoadMore = () => {
-    setVisibleCount(prev => prev + BATCH_SIZE);
-  };
+
 
   const openProject = (project) => {
     setSelectedProject(project);
@@ -180,13 +225,14 @@ export default function PortfolioGrid() {
         {/* Major Category Filters */}
         <div className="filter-tabs">
           {CATEGORIES.map(category => (
-            <button
-              key={category}
-              className={`filter-btn ${activeFilter === category ? 'active' : ''}`}
-              onClick={() => setActiveFilter(category)}
-            >
-              {category} <span className="filter-count">({getCategoryCount(category)})</span>
-            </button>
+            <Magnetic key={category}>
+              <button
+                className={`filter-btn ${activeFilter === category ? 'active' : ''}`}
+                onClick={() => setActiveFilter(category)}
+              >
+                {category} <span className="filter-count">({getCategoryCount(category)})</span>
+              </button>
+            </Magnetic>
           ))}
         </div>
 
@@ -194,13 +240,14 @@ export default function PortfolioGrid() {
         {activeFilter !== "All" && subCategories.length > 1 && (
           <div className="sub-filter-tabs fade-in">
             {subCategories.map(subCat => (
-              <button
-                key={subCat}
-                className={`sub-filter-pill ${activeSubFilter === subCat ? 'active' : ''}`}
-                onClick={() => setActiveSubFilter(subCat)}
-              >
-                {subCat}
-              </button>
+              <Magnetic key={subCat}>
+                <button
+                  className={`sub-filter-pill ${activeSubFilter === subCat ? 'active' : ''}`}
+                  onClick={() => setActiveSubFilter(subCat)}
+                >
+                  {subCat}
+                </button>
+              </Magnetic>
             ))}
           </div>
         )}
@@ -226,6 +273,7 @@ export default function PortfolioGrid() {
                   key={project.id}
                   className="project-card card"
                   onClick={() => openProject(project)}
+                  data-cursor={project.category === "Video Editing" ? "play" : "view"}
                 >
                   <div className="project-thumbnail-wrapper">
                     {/* Lazy Loaded Image with blur effect */}
@@ -293,98 +341,67 @@ export default function PortfolioGrid() {
           </div>
         )}
 
-        {/* Pagination Trigger (Load More) */}
+        {/* Infinite Scroll Sentinel element */}
         {filteredProjects.length > visibleCount && (
-          <div className="load-more-container fade-in">
-            <button className="btn btn-secondary load-more-btn" onClick={handleLoadMore}>
-              Load More Projects ({filteredProjects.length - visibleCount} remaining)
-            </button>
+          <div ref={observerTargetRef} className="infinite-scroll-sentinel">
+            <div className="infinite-scroll-loader">
+              <Loader2 className="animate-spin" size={20} />
+              <span>Loading more projects...</span>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Modal Detailed Overlay */}
+      {/* Premium Media Lightbox Modal */}
       {selectedProject && (
-        <div className="modal-overlay" onClick={closeProject}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close-btn" onClick={closeProject} aria-label="Close modal">
-              <X size={20} />
-            </button>
+        <div className="modal-overlay media-lightbox-overlay" onClick={closeProject}>
+          <button className="lightbox-close-btn" onClick={closeProject} aria-label="Close lightbox">
+            <X size={24} />
+          </button>
 
-            <div className="modal-body-layout">
-              {/* Media Section */}
-              <div className="modal-media-container">
-                {selectedProject.category === "Video Editing" && (
-                  <CustomPlayer
-                    videoSrc={selectedProject.videoUrl}
-                    posterSrc={selectedProject.poster}
+          <div className="lightbox-content-container" onClick={(e) => e.stopPropagation()}>
+            {selectedProject.category === "Video Editing" && (
+              <div className="lightbox-video-wrapper">
+                <CustomPlayer
+                  videoSrc={selectedProject.videoUrl}
+                  posterSrc={selectedProject.poster}
+                />
+              </div>
+            )}
+
+            {selectedProject.category === "Graphic Design" && (
+              <div className="lightbox-gallery-scroll">
+                {Array.isArray(selectedProject.gallery) && selectedProject.gallery.length > 0 ? (
+                  selectedProject.gallery.map((imgUrl, index) => (
+                    <LazyLoadImage
+                      key={index}
+                      src={getOptimizedImageUrl(imgUrl, 1600)}
+                      alt={`${selectedProject.title} - Full Preview ${index + 1}`}
+                      className="lightbox-image"
+                      effect="blur"
+                    />
+                  ))
+                ) : (
+                  <LazyLoadImage
+                    src={getOptimizedImageUrl(selectedProject.mainImage || selectedProject.thumbnail, 1600)}
+                    alt={selectedProject.title}
+                    className="lightbox-image"
+                    effect="blur"
                   />
                 )}
-
-                {selectedProject.category === "Graphic Design" && (
-                  <div className="modal-slider-box">
-                    <BeforeAfterSlider
-                      beforeImage={selectedProject.beforeImage}
-                      afterImage={selectedProject.afterImage}
-                      beforeLabel="Original RAW"
-                      afterLabel="Color Graded & Edited"
-                    />
-                    <p className="slider-instructions">Drag the divider to compare the original and retouched assets.</p>
-                  </div>
-                )}
-
-                {selectedProject.category === "Web Design" && (
-                  <div className="modal-browser-preview">
-                    <div className="preview-browser-bar">
-                      <span className="preview-dot dot-red"></span>
-                      <span className="preview-dot dot-yellow"></span>
-                      <span className="preview-dot dot-green"></span>
-                    </div>
-                    <div className="browser-screen-scroll-container">
-                      <LazyLoadImage
-                        src={getOptimizedImageUrl(selectedProject.webScreenshot || selectedProject.thumbnail, 1200)}
-                        alt={selectedProject.title}
-                        className="browser-preview-img"
-                        effect="blur"
-                        style={{ width: '100%', height: 'auto', display: 'block' }}
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
+            )}
 
-              {/* Text Information Section */}
-              <div className="modal-info-container">
-                <span className="badge modal-badge">{selectedProject.subcategory}</span>
-                <h2 className="modal-project-title">{selectedProject.title}</h2>
-
-                <div className="modal-tools-section">
-                  <h4 className="tools-title">Tools & Frameworks</h4>
-                  <div className="tools-list">
-                    {selectedProject.tools.map((tool, idx) => (
-                      <span 
-                        key={idx} 
-                        className="tool-tag clickable"
-                        onClick={(e) => handleTagClick(tool, e)}
-                      >
-                        {tool}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {selectedProject.liveUrl && (
-                  <a
-                    href={selectedProject.liveUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-primary modal-action-btn"
-                  >
-                    Launch Live Site <ExternalLink size={16} />
-                  </a>
-                )}
+            {selectedProject.category === "Web Design" && (
+              <div className="lightbox-single-scroll">
+                <LazyLoadImage
+                  src={getOptimizedImageUrl(selectedProject.mainImage || selectedProject.thumbnail, 1600)}
+                  alt={selectedProject.title}
+                  className="lightbox-image"
+                  effect="blur"
+                />
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}

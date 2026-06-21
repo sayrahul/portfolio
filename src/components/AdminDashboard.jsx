@@ -21,7 +21,39 @@ const COMMON_TOOLS = [
   "Sound Design"
 ];
 
-export default function AdminDashboard() {
+export const CATEGORY_SUBCATEGORIES = {
+  "Web Design": [
+    "SaaS Systems",
+    "Landing Pages",
+    "E-Commerce",
+    "Portfolio Sites",
+    "Corporate Websites",
+    "Web Applications"
+  ],
+  "Graphic Design": [
+    "Retouching",
+    "Packaging & Print",
+    "Branding",
+    "Social Media Creatives",
+    "Logo Design",
+    "Illustrations"
+  ],
+  "Video Editing": [
+    "Promos & Reels",
+    "Social Content",
+    "YouTube Videos",
+    "Cinematic Videos",
+    "Corporate Promos"
+  ]
+};
+
+export default function AdminDashboard({
+  bulkQueue = [],
+  setBulkQueue,
+  isBulkProcessing = false,
+  handleBulkImportFiles,
+  handleClearBulkQueue
+}) {
   // Auth State
   const [isLoggedIn, setIsLoggedIn] = useState(() => sessionStorage.getItem('portfolio_admin_logged_in') === 'true');
   const [username, setUsername] = useState('');
@@ -31,8 +63,8 @@ export default function AdminDashboard() {
   const [hoveredCategory, setHoveredCategory] = useState(null);
 
   // Cloudinary Settings
-  const [cloudName, setCloudName] = useState(() => localStorage.getItem('cloudinary_cloud_name') || 'dno3fddh9');
-  const [uploadPreset, setUploadPreset] = useState(() => localStorage.getItem('cloudinary_upload_preset') || 'uzxyc123');
+  const [cloudName, setCloudName] = useState(() => localStorage.getItem('cloudinary_cloud_name') || import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dno3fddh9');
+  const [uploadPreset, setUploadPreset] = useState(() => localStorage.getItem('cloudinary_upload_preset') || import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'uzxyc123');
   const [showSettings, setShowSettings] = useState(false);
 
   // Projects Database List (unified database, default + custom)
@@ -50,13 +82,29 @@ export default function AdminDashboard() {
     }
   });
 
+  // Listen for database updates from other parts of the app (like the background importer)
+  useEffect(() => {
+    const handleDbUpdate = () => {
+      try {
+        const db = localStorage.getItem('portfolio_projects_db');
+        if (db) {
+          setProjectsList(JSON.parse(db));
+        }
+      } catch (e) {
+        console.warn("Failed to reload projects database from localStorage:", e);
+      }
+    };
+    window.addEventListener('portfolio_db_updated', handleDbUpdate);
+    return () => window.removeEventListener('portfolio_db_updated', handleDbUpdate);
+  }, []);
+
   // Edit Mode States
   const [editingProjectId, setEditingProjectId] = useState(null);
 
   // Form State
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Web Design');
-  const [subcategory, setSubcategory] = useState('');
+  const [subcategory, setSubcategory] = useState('SaaS Systems');
   const [selectedTools, setSelectedTools] = useState([]);
   const [toolSearchQuery, setToolSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -64,12 +112,11 @@ export default function AdminDashboard() {
   // Media States
   const [thumbnail, setThumbnail] = useState('');
   const [liveUrl, setLiveUrl] = useState('');
-  const [beforeImage, setBeforeImage] = useState('');
-  const [afterImage, setAfterImage] = useState('');
+  const [mainImage, setMainImage] = useState('');
+  const [gallery, setGallery] = useState([]);
   const [videoUrl, setVideoUrl] = useState('');
   const [poster, setPoster] = useState('');
-  const [webScreenshot, setWebScreenshot] = useState('');
-  const [geminiApiKey, setGeminiApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
+  const [geminiApiKey, setGeminiApiKey] = useState(() => localStorage.getItem('gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '');
   const [isAiLoading, setIsAiLoading] = useState(false);
 
   // UI status
@@ -79,7 +126,9 @@ export default function AdminDashboard() {
   // Login Handler
   const handleLogin = (e) => {
     e.preventDefault();
-    if (username.trim().toLowerCase() === 'admin' && password === 'rahul@123') {
+    const adminUser = (import.meta.env.VITE_ADMIN_USERNAME || 'admin').trim().toLowerCase();
+    const adminPass = import.meta.env.VITE_ADMIN_PASSWORD || 'rahul@123';
+    if (username.trim().toLowerCase() === adminUser && password === adminPass) {
       setIsLoggedIn(true);
       sessionStorage.setItem('portfolio_admin_logged_in', 'true');
       setLoginError('');
@@ -103,6 +152,7 @@ export default function AdminDashboard() {
     setSuccessMsg('Settings saved successfully!');
     setTimeout(() => setSuccessMsg(''), 3000);
   };
+
 
   const imageUrlToBase64 = async (url) => {
     try {
@@ -135,9 +185,8 @@ export default function AdminDashboard() {
 
     const imageUrls = [];
     if (thumbnail) imageUrls.push(thumbnail);
-    if (webScreenshot) imageUrls.push(webScreenshot);
-    if (beforeImage) imageUrls.push(beforeImage);
-    if (afterImage) imageUrls.push(afterImage);
+    if (mainImage) imageUrls.push(mainImage);
+    if (gallery && gallery.length > 0) imageUrls.push(...gallery);
     if (poster) imageUrls.push(poster);
 
     const hasAssets = imageUrls.length > 0 || liveUrl || videoUrl || title;
@@ -230,7 +279,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // Direct Cloudinary Upload via API Fetch
+  // Direct Cloudinary Upload via API Fetch (handles both images and videos)
   const handleUploadFile = async (e, field) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -246,7 +295,11 @@ export default function AdminDashboard() {
     formData.append('upload_preset', uploadPreset);
 
     try {
-      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+      // Determine correct Cloudinary endpoint (image vs video) based on file MIME type
+      const isVideo = file.type.startsWith('video/');
+      const resourceType = isVideo ? 'video' : 'image';
+
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`, {
         method: 'POST',
         body: formData
       });
@@ -260,14 +313,53 @@ export default function AdminDashboard() {
 
       // Update corresponding form field
       if (field === 'thumbnail') setThumbnail(secureUrl);
-      else if (field === 'beforeImage') setBeforeImage(secureUrl);
-      else if (field === 'afterImage') setAfterImage(secureUrl);
+      else if (field === 'mainImage') setMainImage(secureUrl);
       else if (field === 'poster') setPoster(secureUrl);
-      else if (field === 'webScreenshot') setWebScreenshot(secureUrl);
+      else if (field === 'videoUrl') setVideoUrl(secureUrl);
 
     } catch (err) {
       console.error("Cloudinary upload failed:", err);
       alert("Direct upload failed. Make sure your upload preset is configured as 'Unsigned' in your Cloudinary Settings.");
+    } finally {
+      setUploadingField(null);
+    }
+  };
+
+  const handleUploadGalleryFiles = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    if (!cloudName || !uploadPreset) {
+      alert("Please configure your Cloudinary Cloud Name and Upload Preset in settings first!");
+      return;
+    }
+
+    setUploadingField('gallery');
+
+    try {
+      const uploadPromises = files.map(async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', uploadPreset);
+
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error("Upload failed. Verify Cloudinary credentials.");
+        }
+
+        const data = await response.json();
+        return data.secure_url;
+      });
+
+      const uploadedUrls = await Promise.all(uploadPromises);
+      setGallery(prev => [...prev, ...uploadedUrls]);
+    } catch (err) {
+      console.error("Gallery upload failed:", err);
+      alert("Some files failed to upload. Make sure your upload preset is configured as 'Unsigned' in your Cloudinary Settings.");
     } finally {
       setUploadingField(null);
     }
@@ -312,11 +404,10 @@ export default function AdminDashboard() {
     
     // Set specific fields
     setLiveUrl(project.liveUrl || '');
-    setBeforeImage(project.beforeImage || '');
-    setAfterImage(project.afterImage || '');
+    setMainImage(project.mainImage || '');
+    setGallery(project.gallery || []);
     setVideoUrl(project.videoUrl || '');
     setPoster(project.poster || '');
-    setWebScreenshot(project.webScreenshot || '');
 
     setActiveTab('form'); // Switch to Form tab when editing
     
@@ -347,15 +438,14 @@ export default function AdminDashboard() {
   const handleCancelEdit = () => {
     setEditingProjectId(null);
     setTitle('');
-    setSubcategory('');
+    setSubcategory(CATEGORY_SUBCATEGORIES[category]?.[0] || '');
     setSelectedTools([]);
     setThumbnail('');
     setLiveUrl('');
-    setBeforeImage('');
-    setAfterImage('');
+    setMainImage('');
+    setGallery([]);
     setVideoUrl('');
     setPoster('');
-    setWebScreenshot('');
   };
 
   // Add or Update Project
@@ -383,10 +473,10 @@ export default function AdminDashboard() {
     // Append category parameters
     if (category === 'Web Design') {
       if (liveUrl) projectData.liveUrl = liveUrl;
-      if (webScreenshot) projectData.webScreenshot = webScreenshot;
+      if (mainImage) projectData.mainImage = mainImage;
     } else if (category === 'Graphic Design') {
-      if (beforeImage) projectData.beforeImage = beforeImage;
-      if (afterImage) projectData.afterImage = afterImage;
+      if (mainImage) projectData.mainImage = mainImage;
+      if (gallery && gallery.length > 0) projectData.gallery = gallery;
     } else if (category === 'Video Editing') {
       if (videoUrl) projectData.videoUrl = videoUrl;
       if (poster) projectData.poster = poster;
@@ -418,18 +508,18 @@ export default function AdminDashboard() {
 
     setProjectsList(updatedList);
     localStorage.setItem('portfolio_projects_db', JSON.stringify(updatedList));
+    window.dispatchEvent(new Event('portfolio_db_updated'));
 
     // Clear form fields
     setTitle('');
-    setSubcategory('');
+    setSubcategory(CATEGORY_SUBCATEGORIES[category]?.[0] || '');
     setSelectedTools([]);
     setThumbnail('');
     setLiveUrl('');
-    setBeforeImage('');
-    setAfterImage('');
+    setMainImage('');
+    setGallery([]);
     setVideoUrl('');
     setPoster('');
-    setWebScreenshot('');
 
     setTimeout(() => setSuccessMsg(''), 3500);
   };
@@ -440,6 +530,7 @@ export default function AdminDashboard() {
       const updatedList = projectsList.filter(p => p.id !== id);
       setProjectsList(updatedList);
       localStorage.setItem('portfolio_projects_db', JSON.stringify(updatedList));
+      window.dispatchEvent(new Event('portfolio_db_updated'));
       if (editingProjectId === id) {
         handleCancelEdit();
       }
@@ -451,6 +542,7 @@ export default function AdminDashboard() {
     if (window.confirm("Are you sure you want to restore default template projects? This will overwrite your current list.")) {
       setProjectsList(PROJECTS);
       localStorage.setItem('portfolio_projects_db', JSON.stringify(PROJECTS));
+      window.dispatchEvent(new Event('portfolio_db_updated'));
       handleCancelEdit();
       setSuccessMsg('Defaults restored successfully!');
       setTimeout(() => setSuccessMsg(''), 3000);
@@ -553,59 +645,79 @@ export default function AdminDashboard() {
   /* ==================== MAIN ADMIN CONTROL DASHBOARD ==================== */
   return (
     <div className="admin-page-wrapper">
-      {/* Header bar */}
-      <div className="admin-action-bar">
-        <a href="#work" className="btn btn-secondary action-btn-back">
-          <ArrowLeft size={16} /> Return to Site
-        </a>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button 
-            onClick={() => setShowSettings(!showSettings)} 
-            className={`btn btn-secondary ${showSettings ? 'active-tab' : ''}`}
-            title="Cloudinary Settings"
-          >
-            <Settings size={16} /> Cloudinary Settings
-          </button>
-          <button onClick={handleRestoreDefaults} className="btn btn-secondary">
-            Restore Defaults
-          </button>
-          <button onClick={handleLogout} className="btn btn-secondary btn-logout" title="Log Out">
-            <LogOut size={16} /> <span>Logout</span>
-          </button>
+      {/* Unified Premium Admin Header */}
+      <header className="admin-dashboard-header">
+        <div className="admin-header-brand-group">
+          <span className="admin-brand-title">Admin Console</span>
+          <a href="#work" className="admin-btn-back" title="Return to Portfolio Site">
+            <ArrowLeft size={14} /> <span>Return to Site</span>
+          </a>
         </div>
-      </div>
 
-      {/* Segmented Sub-navigation Tabs */}
-      <div className="admin-sub-nav-container">
-        <div className="admin-sub-nav">
+        <nav className="admin-header-nav-tabs">
           <button 
             type="button"
-            className={`sub-nav-btn ${activeTab === 'form' ? 'active' : ''}`}
+            className={`admin-nav-tab-btn ${activeTab === 'form' ? 'active' : ''}`}
             onClick={() => setActiveTab('form')}
           >
-            {editingProjectId ? <Pencil size={15} /> : <Plus size={15} />}
-            <span>{editingProjectId ? 'Modify Project' : 'Upload New Project'}</span>
+            {editingProjectId ? <Pencil size={14} /> : <Plus size={14} />}
+            <span>{editingProjectId ? 'Modify' : 'Upload'}</span>
           </button>
           <button 
             type="button"
-            className={`sub-nav-btn ${activeTab === 'catalog' ? 'active' : ''}`}
+            className={`admin-nav-tab-btn ${activeTab === 'catalog' ? 'active' : ''}`}
             onClick={() => setActiveTab('catalog')}
           >
-            <FolderOpen size={15} />
-            <span>Manage Catalog ({projectsList.length})</span>
+            <FolderOpen size={14} />
+            <span>Catalog ({projectsList.length})</span>
           </button>
           <button 
             type="button"
-            className={`sub-nav-btn ${activeTab === 'analytics' ? 'active' : ''}`}
+            className={`admin-nav-tab-btn ${activeTab === 'bulk-import' ? 'active' : ''}`}
+            onClick={() => setActiveTab('bulk-import')}
+          >
+            <Sparkles size={14} />
+            <span>AI Importer</span>
+          </button>
+          <button 
+            type="button"
+            className={`admin-nav-tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
             onClick={() => setActiveTab('analytics')}
           >
-            <BarChart2 size={15} />
-            <span>Analytics Dashboard</span>
+            <BarChart2 size={14} />
+            <span>Analytics</span>
+          </button>
+        </nav>
+
+        <div className="admin-header-action-group">
+          <button 
+            onClick={() => setShowSettings(!showSettings)} 
+            className={`admin-action-icon-btn ${showSettings ? 'active' : ''}`}
+            title="Cloudinary & Gemini Settings"
+          >
+            <Settings size={16} />
+            <span className="btn-label-desktop">Settings</span>
+          </button>
+          <button 
+            onClick={handleRestoreDefaults} 
+            className="admin-action-icon-btn"
+            title="Restore Defaults"
+          >
+            <RefreshCw size={16} />
+            <span className="btn-label-desktop">Restore Defaults</span>
+          </button>
+          <button 
+            onClick={handleLogout} 
+            className="admin-action-icon-btn logout" 
+            title="Log Out"
+          >
+            <LogOut size={16} />
+            <span className="btn-label-desktop">Logout</span>
           </button>
         </div>
-      </div>
+      </header>
 
-      <div className={`admin-grid container ${activeTab !== 'analytics' ? 'centered-admin-grid' : 'wide-admin-grid'}`}>
+      <div className={`admin-grid container ${activeTab === 'analytics' ? 'wide-admin-grid' : 'centered-admin-grid'}`}>
         
         {/* Centered Form Builder */}
         <div className="admin-form-column">
@@ -842,6 +954,106 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
+          ) : activeTab === 'bulk-import' ? (
+            <div className="admin-form-card card fade-in">
+              <h2 className="admin-card-title"><Sparkles size={18} /> Bulk AI Portfolio Importer</h2>
+              <p className="admin-card-desc">
+                Select multiple image files. The system will upload them to Cloudinary and use Gemini 2.5 Flash to automatically detect category, sub-category, title, and tools used for each image, saving them to your portfolio database in real time.
+              </p>
+              
+              {(!cloudName || !uploadPreset || !geminiApiKey) && (
+                <div className="login-error-box alert alert-danger fade-in" style={{ backgroundColor: 'rgba(239, 68, 68, 0.08)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                  <AlertCircle size={16} />
+                  <span>
+                    <strong>Configuration Missing:</strong> Please check and save your Cloudinary settings and Gemini API key in the configurations tab first.
+                  </span>
+                </div>
+              )}
+              
+              <div className="bulk-dropzone-wrapper" style={{ border: '2px dashed var(--border-color)', borderRadius: 'var(--radius-lg)', padding: '40px 20px', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.2s ease', backgroundColor: 'var(--bg-secondary)' }}>
+                <label className="bulk-dropzone-label" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', width: '100%' }}>
+                  <Upload size={32} style={{ color: 'var(--text-muted)', marginBottom: '8px' }} />
+                  <span className="dropzone-title" style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--primary)' }}>Select Images to Import</span>
+                  <span className="dropzone-subtitle" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Supported formats: JPG, PNG, WEBP. You can upload multiple files at once.</span>
+                  <input 
+                    type="file" 
+                    multiple 
+                    accept="image/*"
+                    onChange={handleBulkImportFiles}
+                    className="bulk-file-input"
+                    disabled={!cloudName || !uploadPreset || !geminiApiKey}
+                    style={{ display: 'none' }}
+                  />
+                  <button 
+                    type="button" 
+                    className="btn btn-primary"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const input = document.querySelector('.bulk-file-input');
+                      if (input) input.click();
+                    }}
+                    disabled={!cloudName || !uploadPreset || !geminiApiKey}
+                    style={{ marginTop: '16px' }}
+                  >
+                    Browse Files
+                  </button>
+                </label>
+              </div>
+              
+              {bulkQueue.length > 0 && (
+                <div className="bulk-queue-section" style={{ marginTop: '32px' }}>
+                  <div className="queue-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: '700' }}>Import Queue ({bulkQueue.filter(item => item.status === 'completed').length}/{bulkQueue.length} processed)</h3>
+                    <button 
+                      type="button" 
+                      className="btn btn-secondary" 
+                      onClick={handleClearBulkQueue}
+                      disabled={isBulkProcessing}
+                      style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                    >
+                      Clear Queue
+                    </button>
+                  </div>
+                  
+                  <div className="bulk-queue-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {bulkQueue.map((item) => (
+                      <div key={item.id} className={`bulk-queue-item card status-${item.status}`} style={{ padding: '16px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-secondary)', textAlign: 'left' }}>
+                        <div className="bulk-queue-item-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
+                          <span className="file-name" style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)' }}>{item.name}</span>
+                          <span className={`status-badge badge-${item.status}`} style={{ fontSize: '0.7rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '100px', backgroundColor: item.status === 'completed' ? 'rgba(34, 197, 94, 0.15)' : item.status === 'failed' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(37, 99, 235, 0.15)', color: item.status === 'completed' ? '#22c55e' : item.status === 'failed' ? '#ef4444' : '#2563eb' }}>
+                            {item.status.toUpperCase()}
+                          </span>
+                        </div>
+                        
+                        {['uploading', 'analyzing'].includes(item.status) && (
+                          <div className="item-progress-bar-bg" style={{ width: '100%', height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden', marginTop: '8px' }}>
+                            <div className="item-progress-bar-fill" style={{ height: '100%', width: `${item.progress}%`, backgroundColor: 'var(--accent)', transition: 'width 0.4s ease' }}></div>
+                          </div>
+                        )}
+                        
+                        {item.status === 'failed' && (
+                          <p className="item-error-msg" style={{ fontSize: '0.78rem', color: '#ef4444', marginTop: '6px', margin: 0 }}>{item.error}</p>
+                        )}
+                        
+                        {item.status === 'completed' && (
+                          <div className="item-details-preview" style={{ display: 'flex', gap: '12px', marginTop: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '12px', flexWrap: 'wrap' }}>
+                            <div className="details-thumb-container" style={{ flexShrink: 0 }}>
+                              <img src={item.url} alt={item.title} className="details-thumb" style={{ width: '60px', height: '45px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border-color)' }} />
+                            </div>
+                            <div className="details-info" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                              <strong>Title:</strong> {item.title} <br/>
+                              <strong>Category:</strong> {item.category} &bull; <strong>Sub-category:</strong> {item.subcategory} <br/>
+                              <strong>Tools:</strong> {item.tools.join(', ')}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           ) : activeTab === 'form' ? (
             <>
               {/* Edit Mode Alert Bar */}
@@ -907,7 +1119,7 @@ export default function AdminDashboard() {
               <h2 className="admin-card-title" style={{ marginBottom: 0 }}>
                 {editingProjectId ? 'Modify Project Details' : 'Add New Project'}
               </h2>
-              {(thumbnail || webScreenshot || beforeImage || afterImage || poster || liveUrl || videoUrl || title) && (
+              {(thumbnail || mainImage || (gallery && gallery.length > 0) || poster || liveUrl || videoUrl || title) && (
                 <button
                   type="button"
                   onClick={generateMetadataWithAI}
@@ -954,7 +1166,14 @@ export default function AdminDashboard() {
                   <label className="form-label">Primary Category *</label>
                   <select 
                     value={category} 
-                    onChange={e => setCategory(e.target.value)} 
+                    onChange={e => {
+                      const newCat = e.target.value;
+                      setCategory(newCat);
+                      const subcats = CATEGORY_SUBCATEGORIES[newCat] || [];
+                      if (subcats.length > 0) {
+                        setSubcategory(subcats[0]);
+                      }
+                    }} 
                     className="form-input select-input"
                   >
                     <option value="Web Design">Web Design</option>
@@ -966,14 +1185,23 @@ export default function AdminDashboard() {
 
               <div className="form-group">
                 <label className="form-label">Sub-category (Tag) *</label>
-                <input 
-                  type="text" 
-                  value={subcategory} 
-                  onChange={e => setSubcategory(e.target.value)} 
-                  placeholder="e.g. SaaS / Retouching / Reels"
-                  className="form-input" 
+                <select
+                  value={subcategory}
+                  onChange={e => setSubcategory(e.target.value)}
+                  className="form-input select-input"
                   required
-                />
+                >
+                  {(() => {
+                    const predefined = CATEGORY_SUBCATEGORIES[category] || [];
+                    const options = [...predefined];
+                    if (subcategory && !options.includes(subcategory)) {
+                      options.push(subcategory);
+                    }
+                    return options.map(sub => (
+                      <option key={sub} value={sub}>{sub}</option>
+                    ));
+                  })()}
+                </select>
               </div>
 
 
@@ -1087,21 +1315,21 @@ export default function AdminDashboard() {
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Actual Website Screenshot</label>
+                    <label className="form-label">Main Project Image</label>
                     <div className="upload-input-group">
                       <input 
                         type="text" 
-                        value={webScreenshot} 
-                        onChange={e => setWebScreenshot(e.target.value)} 
+                        value={mainImage} 
+                        onChange={e => setMainImage(e.target.value)} 
                         placeholder="Paste image URL or upload file"
                         className="form-input text-url-input" 
                       />
                       <label className="upload-file-btn">
-                        {uploadingField === 'webScreenshot' ? <RefreshCw size={14} className="spin-icon" /> : <Upload size={14} />} 
+                        {uploadingField === 'mainImage' ? <RefreshCw size={14} className="spin-icon" /> : <Upload size={14} />} 
                         <span>Upload</span>
                         <input 
                           type="file" 
-                          onChange={e => handleUploadFile(e, 'webScreenshot')} 
+                          onChange={e => handleUploadFile(e, 'mainImage')} 
                           style={{ display: 'none' }}
                           accept="image/*"
                         />
@@ -1112,48 +1340,132 @@ export default function AdminDashboard() {
               )}
 
               {category === 'Graphic Design' && (
-                <div className="form-row grid-2 border-top-form">
-                  <div className="form-group">
-                    <label className="form-label">Before Retouched Image</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div className="form-group border-top-form">
+                    <label className="form-label">Main Project Image</label>
                     <div className="upload-input-group">
                       <input 
                         type="text" 
-                        value={beforeImage} 
-                        onChange={e => setBeforeImage(e.target.value)} 
-                        placeholder="Image URL or upload"
+                        value={mainImage} 
+                        onChange={e => setMainImage(e.target.value)} 
+                        placeholder="Paste image URL or upload file"
                         className="form-input text-url-input" 
                       />
                       <label className="upload-file-btn">
-                        {uploadingField === 'beforeImage' ? <RefreshCw size={14} className="spin-icon" /> : <Upload size={14} />} 
+                        {uploadingField === 'mainImage' ? <RefreshCw size={14} className="spin-icon" /> : <Upload size={14} />} 
+                        <span>Upload file</span>
                         <input 
                           type="file" 
-                          onChange={e => handleUploadFile(e, 'beforeImage')} 
+                          onChange={e => handleUploadFile(e, 'mainImage')} 
                           style={{ display: 'none' }}
                           accept="image/*"
                         />
                       </label>
                     </div>
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">After Retouched Image</label>
-                    <div className="upload-input-group">
+
+                  <div className="form-group border-top-form">
+                    <label className="form-label">Project Gallery (Upload multiple images, displayed one below another)</label>
+                    <div className="upload-input-group" style={{ marginBottom: '12px' }}>
                       <input 
                         type="text" 
-                        value={afterImage} 
-                        onChange={e => setAfterImage(e.target.value)} 
-                        placeholder="Image URL or upload"
+                        id="gallery-url-input"
+                        placeholder="Paste image URL and press Enter or click Add"
                         className="form-input text-url-input" 
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const url = e.target.value.trim();
+                            if (url) {
+                              setGallery(prev => [...prev, url]);
+                              e.target.value = '';
+                            }
+                          }
+                        }}
                       />
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={() => {
+                          const input = document.getElementById('gallery-url-input');
+                          if (input && input.value.trim()) {
+                            setGallery(prev => [...prev, input.value.trim()]);
+                            input.value = '';
+                          }
+                        }}
+                        style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+                      >
+                        Add
+                      </button>
                       <label className="upload-file-btn">
-                        {uploadingField === 'afterImage' ? <RefreshCw size={14} className="spin-icon" /> : <Upload size={14} />} 
+                        {uploadingField === 'gallery' ? <RefreshCw size={14} className="spin-icon" /> : <Upload size={14} />} 
+                        <span>Upload Multiple</span>
                         <input 
                           type="file" 
-                          onChange={e => handleUploadFile(e, 'afterImage')} 
+                          onChange={e => handleUploadGalleryFiles(e)} 
                           style={{ display: 'none' }}
                           accept="image/*"
+                          multiple
                         />
                       </label>
                     </div>
+
+                    {gallery.length > 0 && (
+                      <div className="gallery-preview-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {gallery.map((img, idx) => (
+                          <div key={idx} className="gallery-item-row" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--bg-secondary)' }}>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-muted)', width: '20px' }}>{idx + 1}</span>
+                            <img src={img} alt={`gallery-thumb-${idx}`} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border-color)' }} />
+                            <span style={{ flex: 1, fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>{img}</span>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              <button
+                                type="button"
+                                disabled={idx === 0}
+                                onClick={() => {
+                                  const updated = [...gallery];
+                                  const temp = updated[idx];
+                                  updated[idx] = updated[idx - 1];
+                                  updated[idx - 1] = temp;
+                                  setGallery(updated);
+                                }}
+                                className="admin-card-btn"
+                                style={{ width: '24px', height: '24px', padding: 0 }}
+                                title="Move Up"
+                              >
+                                ↑
+                              </button>
+                              <button
+                                type="button"
+                                disabled={idx === gallery.length - 1}
+                                onClick={() => {
+                                  const updated = [...gallery];
+                                  const temp = updated[idx];
+                                  updated[idx] = updated[idx + 1];
+                                  updated[idx + 1] = temp;
+                                  setGallery(updated);
+                                }}
+                                className="admin-card-btn"
+                                style={{ width: '24px', height: '24px', padding: 0 }}
+                                title="Move Down"
+                              >
+                                ↓
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setGallery(prev => prev.filter((_, i) => i !== idx));
+                                }}
+                                className="admin-card-btn delete-btn"
+                                style={{ width: '24px', height: '24px', padding: 0 }}
+                                title="Delete"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -1162,13 +1474,24 @@ export default function AdminDashboard() {
                 <div className="form-row grid-2 border-top-form">
                   <div className="form-group">
                     <label className="form-label">Video File URL (Direct .mp4)</label>
-                    <input 
-                      type="url" 
-                      value={videoUrl} 
-                      onChange={e => setVideoUrl(e.target.value)} 
-                      placeholder="e.g. GCS/S3 video source link"
-                      className="form-input" 
-                    />
+                    <div className="upload-input-group">
+                      <input 
+                        type="url" 
+                        value={videoUrl} 
+                        onChange={e => setVideoUrl(e.target.value)} 
+                        placeholder="e.g. paste video URL or upload file"
+                        className="form-input text-url-input" 
+                      />
+                      <label className="upload-file-btn">
+                        {uploadingField === 'videoUrl' ? <RefreshCw size={14} className="spin-icon" /> : <Upload size={14} />} 
+                        <input 
+                          type="file" 
+                          onChange={e => handleUploadFile(e, 'videoUrl')} 
+                          style={{ display: 'none' }}
+                          accept="video/*"
+                        />
+                      </label>
+                    </div>
                   </div>
                   <div className="form-group">
                     <label className="form-label">Video Cover Poster</label>

@@ -93,10 +93,10 @@ export default function ContactPage() {
       origin: { y: 0.5 }
     });
 
-    // EmailJS credentials
-    const serviceId = 'service_ss88fp6';
-    const templateId = 'template_k8irqxn';
-    const publicKey = 'Hn6f2EjkZDedPcb-i';
+    // EmailJS credentials (loaded from env variables with secure defaults)
+    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_ss88fp6';
+    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_k8irqxn';
+    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'Hn6f2EjkZDedPcb-i';
 
     const formattedServices = selectedServices.length > 0 ? selectedServices.join(', ') : 'None selected';
     const formattedTimeline = selectedTimeline || 'Not specified';
