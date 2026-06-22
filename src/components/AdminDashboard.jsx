@@ -1151,12 +1151,12 @@ export default function AdminDashboard({
               <div className="bulk-dropzone-wrapper" style={{ border: '2px dashed var(--border-color)', borderRadius: 'var(--radius-lg)', padding: '40px 20px', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.2s ease', backgroundColor: 'var(--bg-secondary)' }}>
                 <label className="bulk-dropzone-label" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', width: '100%' }}>
                   <Upload size={32} style={{ color: 'var(--text-muted)', marginBottom: '8px' }} />
-                  <span className="dropzone-title" style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--primary)' }}>Select Images to Import</span>
-                  <span className="dropzone-subtitle" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Supported formats: JPG, PNG, WEBP. You can upload multiple files at once.</span>
+                  <span className="dropzone-title" style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--primary)' }}>Select Images/Videos to Import</span>
+                  <span className="dropzone-subtitle" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Supported formats: JPG, PNG, WEBP, MP4, MOV, WEBM, MKV. You can upload multiple files at once.</span>
                   <input 
                     type="file" 
                     multiple 
-                    accept="image/*"
+                    accept="image/*,video/*"
                     onChange={handleBulkImportFiles}
                     className="bulk-file-input"
                     disabled={!cloudName || !uploadPreset || !geminiApiKey}
@@ -1217,7 +1217,7 @@ export default function AdminDashboard({
                         {item.status === 'completed' && (
                           <div className="item-details-preview" style={{ display: 'flex', gap: '12px', marginTop: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '12px', flexWrap: 'wrap' }}>
                             <div className="details-thumb-container" style={{ flexShrink: 0 }}>
-                              <img src={item.url} alt={item.title} className="details-thumb" style={{ width: '60px', height: '45px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border-color)' }} />
+                              <img src={item.thumbnail || item.url} alt={item.title} className="details-thumb" style={{ width: '60px', height: '45px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border-color)' }} />
                             </div>
                             <div className="details-info" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
                               <strong>Title:</strong> {item.title} <br/>
