@@ -64,7 +64,8 @@ export default function AdminDashboard({
   setBulkQueue,
   isBulkProcessing = false,
   handleBulkImportFiles,
-  handleClearBulkQueue
+  handleClearBulkQueue,
+  handleRetryFailedItems
 }) {
   // Auth State
   const [isLoggedIn, setIsLoggedIn] = useState(() => sessionStorage.getItem('portfolio_admin_logged_in') === 'true');
@@ -1262,15 +1263,28 @@ export default function AdminDashboard({
                 <div className="bulk-queue-section" style={{ marginTop: '32px' }}>
                   <div className="queue-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
                     <h3 style={{ fontSize: '1rem', fontWeight: '700' }}>Import Queue ({bulkQueue.filter(item => item.status === 'completed').length}/{bulkQueue.length} processed)</h3>
-                    <button 
-                      type="button" 
-                      className="btn btn-secondary" 
-                      onClick={handleClearBulkQueue}
-                      disabled={isBulkProcessing}
-                      style={{ padding: '6px 12px', fontSize: '0.8rem' }}
-                    >
-                      Clear Queue
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      {bulkQueue.some(item => item.status === 'failed') && (
+                        <button 
+                          type="button" 
+                          className="btn btn-secondary" 
+                          onClick={handleRetryFailedItems}
+                          disabled={isBulkProcessing}
+                          style={{ padding: '6px 12px', fontSize: '0.8rem', border: '1px solid var(--accent)', color: 'var(--accent)' }}
+                        >
+                          Retry Failed
+                        </button>
+                      )}
+                      <button 
+                        type="button" 
+                        className="btn btn-secondary" 
+                        onClick={handleClearBulkQueue}
+                        disabled={isBulkProcessing}
+                        style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                      >
+                        Clear Queue
+                      </button>
+                    </div>
                   </div>
                   
                   <div className="bulk-queue-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

@@ -385,6 +385,11 @@ export default function App() {
     setHasCelebrated(false);
   };
 
+  const handleRetryFailedItems = () => {
+    setBulkQueue(prev => prev.map(item => item.status === 'failed' ? { ...item, status: 'idle', error: '', progress: 0 } : item));
+    setHasCelebrated(false);
+  };
+
   // Queue runner observer
   useEffect(() => {
     const idleItem = bulkQueue.find(item => item.status === 'idle');
@@ -439,6 +444,7 @@ export default function App() {
           isBulkProcessing={isBulkProcessing}
           handleBulkImportFiles={handleBulkImportFiles}
           handleClearBulkQueue={handleClearBulkQueue}
+          handleRetryFailedItems={handleRetryFailedItems}
         />
       ) : (
         // Standard Portfolio Site views
