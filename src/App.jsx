@@ -121,7 +121,7 @@ export default function App() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData?.error?.message || "Upload failed. Check Cloudinary settings.");
+        throw new Error(errorData?.error?.message || "Verify your Cloudinary unsigned preset size limits.");
       }
 
       const data = await response.json();
@@ -139,6 +139,64 @@ export default function App() {
         thumbnail: isVideo ? videoThumbnail : secureUrl,
         progress: 50 
       });
+
+      // --- SKIP AI FOR VIDEO FILES ---
+      if (isVideo) {
+        updateItemStatus(itemId, { status: 'analyzing', progress: 80 });
+        
+        // Formulate a clean, human-readable title from the video file name
+        const lastDotIdx = file.name.lastIndexOf('.');
+        const rawTitle = lastDotIdx !== -1 ? file.name.substring(0, lastDotIdx) : file.name;
+        const resolvedTitle = rawTitle
+          .replace(/[-_]/g, ' ')
+          .replace(/\b\w/g, c => c.toUpperCase());
+        
+        const resolvedCategory = "Video Editing";
+        const resolvedSubcategory = "Promos & Reels";
+        const resolvedTools = ["Adobe Premiere Pro", "DaVinci Resolve"];
+
+        const projectData = {
+          id: `video-editing-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          title: resolvedTitle,
+          category: resolvedCategory,
+          subcategory: resolvedSubcategory,
+          tools: resolvedTools,
+          iconType: 'video',
+          thumbnail: videoThumbnail,
+          videoUrl: secureUrl,
+          poster: videoThumbnail || 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800'
+        };
+
+        // Read current DB, append, and save
+        let currentDb = [];
+        try {
+          const storedDb = localStorage.getItem('portfolio_projects_db');
+          if (storedDb) {
+            currentDb = JSON.parse(storedDb);
+          }
+        } catch (e) {
+          console.error("Failed to parse projects db:", e);
+        }
+        const updatedDb = [projectData, ...currentDb];
+        localStorage.setItem('portfolio_projects_db', JSON.stringify(updatedDb));
+        
+        // Dispatch database update event so other components sync automatically
+        window.dispatchEvent(new Event('portfolio_db_updated'));
+
+        updateItemStatus(itemId, {
+          status: 'completed',
+          progress: 100,
+          title: resolvedTitle,
+          category: resolvedCategory,
+          subcategory: resolvedSubcategory,
+          tools: resolvedTools,
+          thumbnail: videoThumbnail
+        });
+        
+        setIsBulkProcessing(false);
+        return; // Complete item processing immediately
+      }
+
     } catch (err) {
       updateItemStatus(itemId, { status: 'failed', error: `Upload error: ${err.message}`, progress: 0 });
       setIsBulkProcessing(false);
