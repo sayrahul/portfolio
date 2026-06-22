@@ -727,6 +727,7 @@ export default function AdminDashboard({
 
         <div className="admin-header-action-group">
           <button 
+            type="button"
             onClick={() => setShowSettings(!showSettings)} 
             className={`admin-action-icon-btn ${showSettings ? 'active' : ''}`}
             title="Cloudinary & Gemini Settings"
@@ -735,6 +736,7 @@ export default function AdminDashboard({
             <span className="btn-label-desktop">Settings</span>
           </button>
           <button 
+            type="button"
             onClick={handleRestoreDefaults} 
             className="admin-action-icon-btn"
             title="Restore Defaults"
@@ -743,6 +745,7 @@ export default function AdminDashboard({
             <span className="btn-label-desktop">Restore Defaults</span>
           </button>
           <button 
+            type="button"
             onClick={handleExportDatabase} 
             className="admin-action-icon-btn"
             title="Export Database JSON"
@@ -751,6 +754,7 @@ export default function AdminDashboard({
             <span className="btn-label-desktop">Export DB</span>
           </button>
           <button 
+            type="button"
             onClick={handleLogout} 
             className="admin-action-icon-btn logout" 
             title="Log Out"
