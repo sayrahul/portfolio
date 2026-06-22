@@ -95,6 +95,7 @@ export default function App() {
     setIsBulkProcessing(true);
     const itemId = idleItem.id;
     const file = idleItem.file;
+    const useAi = idleItem.useAi;
 
     const cloudName = getSafeSetting('cloudinary_cloud_name', import.meta.env.VITE_CLOUDINARY_CLOUD_NAME, 'dno3fddh9');
     const uploadPreset = getSafeSetting('cloudinary_upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET, 'uzxyc123');
@@ -140,8 +141,8 @@ export default function App() {
         progress: 50 
       });
 
-      // --- SKIP AI FOR VIDEO FILES ---
-      if (isVideo) {
+      // --- SKIP AI FOR VIDEO FILES OR PLAIN IMPORTS ---
+      if (isVideo || !useAi) {
         updateItemStatus(itemId, { status: 'analyzing', progress: 80 });
         
         // Formulate a clean, human-readable title from the video file name
@@ -151,21 +152,27 @@ export default function App() {
           .replace(/[-_]/g, ' ')
           .replace(/\b\w/g, c => c.toUpperCase());
         
-        const resolvedCategory = "Video Editing";
-        const resolvedSubcategory = "Promos & Reels";
-        const resolvedTools = ["Adobe Premiere Pro", "DaVinci Resolve"];
+        const resolvedCategory = isVideo ? "Video Editing" : "Graphic Design";
+        const resolvedSubcategory = isVideo ? "Promos & Reels" : "Retouching";
+        const resolvedTools = isVideo ? ["Adobe Premiere Pro", "DaVinci Resolve"] : ["Adobe Photoshop"];
+        const iconType = isVideo ? "video" : "design";
 
         const projectData = {
-          id: `video-editing-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          id: `${resolvedCategory.toLowerCase().replace(' ', '-')}-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
           title: resolvedTitle,
           category: resolvedCategory,
           subcategory: resolvedSubcategory,
           tools: resolvedTools,
-          iconType: 'video',
-          thumbnail: videoThumbnail,
-          videoUrl: secureUrl,
-          poster: videoThumbnail || 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800'
+          iconType,
+          thumbnail: isVideo ? videoThumbnail : secureUrl
         };
+
+        if (resolvedCategory === 'Video Editing') {
+          projectData.videoUrl = secureUrl;
+          projectData.poster = videoThumbnail || 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800';
+        } else {
+          projectData.mainImage = secureUrl;
+        }
 
         // Read current DB, append, and save
         let currentDb = [];
@@ -190,7 +197,7 @@ export default function App() {
           category: resolvedCategory,
           subcategory: resolvedSubcategory,
           tools: resolvedTools,
-          thumbnail: videoThumbnail
+          thumbnail: isVideo ? videoThumbnail : secureUrl
         });
         
         setIsBulkProcessing(false);
@@ -331,7 +338,7 @@ export default function App() {
     }
   };
 
-  const handleBulkImportFiles = (e) => {
+  const handleBulkImportFiles = (e, useAi = false) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
@@ -339,9 +346,16 @@ export default function App() {
     const uploadPreset = getSafeSetting('cloudinary_upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET, 'uzxyc123');
     const geminiApiKey = getSafeSetting('gemini_api_key', import.meta.env.VITE_GEMINI_API_KEY, '');
 
-    if (!cloudName || !uploadPreset || !geminiApiKey) {
-      alert("Please configure your Cloudinary settings and Gemini API Key in the configurations first!");
-      return;
+    if (useAi) {
+      if (!cloudName || !uploadPreset || !geminiApiKey) {
+        alert("Please configure your Cloudinary settings and Gemini API Key in the configurations first!");
+        return;
+      }
+    } else {
+      if (!cloudName || !uploadPreset) {
+        alert("Please configure your Cloudinary settings in the configurations first!");
+        return;
+      }
     }
 
     const newItems = files.map((file, idx) => ({
@@ -355,7 +369,8 @@ export default function App() {
       subcategory: '',
       tools: [],
       url: '',
-      error: ''
+      error: '',
+      useAi
     }));
 
     setHasCelebrated(false); // Reset celebration flag for new batch

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Save, Upload, Trash2, Settings, Sparkles, RefreshCw, AlertCircle, Pencil, X, Lock, User, LogOut, CheckSquare, Square, Plus, FolderOpen, BarChart2, Download } from 'lucide-react';
 import { PROJECTS } from '../data/projects';
 import './AdminDashboard.css';
@@ -73,6 +73,9 @@ export default function AdminDashboard({
   const [loginError, setLoginError] = useState('');
   const [activeTab, setActiveTab] = useState('form'); // 'form', 'catalog', or 'analytics'
   const [hoveredCategory, setHoveredCategory] = useState(null);
+
+  const aiFileInputRef = useRef(null);
+  const plainFileInputRef = useRef(null);
 
   // Cloudinary Settings
   const [cloudName, setCloudName] = useState(() => getSafeSetting('cloudinary_cloud_name', import.meta.env.VITE_CLOUDINARY_CLOUD_NAME, 'dno3fddh9'));
@@ -768,6 +771,14 @@ export default function AdminDashboard({
           </button>
           <button 
             type="button"
+            className={`admin-nav-tab-btn ${activeTab === 'plain-bulk-import' ? 'active' : ''}`}
+            onClick={() => setActiveTab('plain-bulk-import')}
+          >
+            <Upload size={14} />
+            <span>Plain Importer</span>
+          </button>
+          <button 
+            type="button"
             className={`admin-nav-tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
             onClick={() => setActiveTab('analytics')}
           >
@@ -1109,75 +1120,141 @@ export default function AdminDashboard({
                 </div>
               </div>
             </div>
-          ) : activeTab === 'bulk-import' ? (
+          ) : (activeTab === 'bulk-import' || activeTab === 'plain-bulk-import') ? (
             <div className="admin-form-card card fade-in">
-              <h2 className="admin-card-title"><Sparkles size={18} /> Bulk AI Portfolio Importer</h2>
-              <p className="admin-card-desc">
-                Select multiple image files. The system will upload them to Cloudinary and use Gemini 2.5 Flash to automatically detect category, sub-category, title, and tools used for each image, saving them to your portfolio database in real time.
-              </p>
-              
-              {(!cloudName || !uploadPreset || !geminiApiKey) && (
-                <div className="login-error-box alert alert-danger fade-in" style={{ backgroundColor: 'rgba(239, 68, 68, 0.08)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.2)', marginBottom: '20px' }}>
-                  <AlertCircle size={16} style={{ flexShrink: 0 }} />
-                  <span>
-                    <strong>Configuration Missing:</strong>{' '}
-                    {!cloudName || !uploadPreset ? (
-                      !geminiApiKey ? (
-                        <>Both <strong>Cloudinary credentials</strong> and the <strong>Gemini API Key</strong> are missing. Please configure them in the </>
-                      ) : (
-                        <><strong>Cloudinary credentials</strong> are missing. Please configure them in the </>
-                      )
-                    ) : (
-                      <>Your <strong>Gemini API Key</strong> is missing (required for AI auto-tagging). Please save it in the </>
-                    )}
-                    <button 
-                      type="button"
-                      onClick={() => { 
-                        setShowSettings(true); 
-                        setTimeout(() => { 
-                          const el = document.querySelector('.admin-settings-card'); 
-                          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
-                        }, 100); 
-                      }} 
-                      style={{ background: 'none', border: 'none', color: '#60a5fa', textDecoration: 'underline', padding: 0, cursor: 'pointer', font: 'inherit', display: 'inline', fontWeight: 'bold' }}
-                    >
-                      settings panel
-                    </button>
-                    {' '}first.
-                  </span>
-                </div>
+              {activeTab === 'bulk-import' ? (
+                <>
+                  <h2 className="admin-card-title"><Sparkles size={18} /> Bulk AI Portfolio Importer</h2>
+                  <p className="admin-card-desc">
+                    Select multiple image files. The system will upload them to Cloudinary and use Gemini 2.5 Flash to automatically detect category, sub-category, title, and tools used for each image, saving them to your portfolio database in real time.
+                  </p>
+                  
+                  {(!cloudName || !uploadPreset || !geminiApiKey) && (
+                    <div className="login-error-box alert alert-danger fade-in" style={{ backgroundColor: 'rgba(239, 68, 68, 0.08)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.2)', marginBottom: '20px' }}>
+                      <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                      <span>
+                        <strong>Configuration Missing:</strong>{' '}
+                        {!cloudName || !uploadPreset ? (
+                          !geminiApiKey ? (
+                            <>Both <strong>Cloudinary credentials</strong> and the <strong>Gemini API Key</strong> are missing. Please configure them in the </>
+                          ) : (
+                            <><strong>Cloudinary credentials</strong> are missing. Please configure them in the </>
+                          )
+                        ) : (
+                          <>Your <strong>Gemini API Key</strong> is missing (required for AI auto-tagging). Please save it in the </>
+                        )}
+                        <button 
+                          type="button"
+                          onClick={() => { 
+                            setShowSettings(true); 
+                            setTimeout(() => { 
+                              const el = document.querySelector('.admin-settings-card'); 
+                              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
+                            }, 100); 
+                          }} 
+                          style={{ background: 'none', border: 'none', color: '#60a5fa', textDecoration: 'underline', padding: 0, cursor: 'pointer', font: 'inherit', display: 'inline', fontWeight: 'bold' }}
+                        >
+                          settings panel
+                        </button>
+                        {' '}first.
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className="bulk-dropzone-wrapper" style={{ border: '2px dashed var(--border-color)', borderRadius: 'var(--radius-lg)', padding: '40px 20px', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.2s ease', backgroundColor: 'var(--bg-secondary)' }}>
+                    <label className="bulk-dropzone-label" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', width: '100%' }}>
+                      <Upload size={32} style={{ color: 'var(--text-muted)', marginBottom: '8px' }} />
+                      <span className="dropzone-title" style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--primary)' }}>Select Images to Import (AI)</span>
+                      <span className="dropzone-subtitle" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Supported formats: JPG, PNG, WEBP. Files are automatically analyzed by Gemini.</span>
+                      <input 
+                        type="file" 
+                        multiple 
+                        accept="image/*"
+                        ref={aiFileInputRef}
+                        onChange={(e) => handleBulkImportFiles(e, true)}
+                        className="bulk-file-input"
+                        disabled={!cloudName || !uploadPreset || !geminiApiKey}
+                        style={{ display: 'none' }}
+                      />
+                      <button 
+                        type="button" 
+                        className="btn btn-primary"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (aiFileInputRef.current) aiFileInputRef.current.click();
+                        }}
+                        disabled={!cloudName || !uploadPreset || !geminiApiKey}
+                        style={{ marginTop: '16px' }}
+                      >
+                        Browse Images
+                      </button>
+                    </label>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2 className="admin-card-title"><Upload size={18} /> Bulk Plain Media Importer</h2>
+                  <p className="admin-card-desc">
+                    Select multiple image or video files. The system will upload them directly to Cloudinary and save them to your database with a default name based on the filename. No AI auto-fill is performed.
+                  </p>
+                  
+                  {(!cloudName || !uploadPreset) && (
+                    <div className="login-error-box alert alert-danger fade-in" style={{ backgroundColor: 'rgba(239, 68, 68, 0.08)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.2)', marginBottom: '20px' }}>
+                      <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                      <span>
+                        <strong>Configuration Missing:</strong>{' '}
+                        <strong>Cloudinary credentials</strong> are missing. Please configure them in the{' '}
+                        <button 
+                          type="button"
+                          onClick={() => { 
+                            setShowSettings(true); 
+                            setTimeout(() => { 
+                              const el = document.querySelector('.admin-settings-card'); 
+                              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
+                            }, 100); 
+                          }} 
+                          style={{ background: 'none', border: 'none', color: '#60a5fa', textDecoration: 'underline', padding: 0, cursor: 'pointer', font: 'inherit', display: 'inline', fontWeight: 'bold' }}
+                        >
+                          settings panel
+                        </button>
+                        {' '}first.
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className="bulk-dropzone-wrapper" style={{ border: '2px dashed var(--border-color)', borderRadius: 'var(--radius-lg)', padding: '40px 20px', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.2s ease', backgroundColor: 'var(--bg-secondary)' }}>
+                    <label className="bulk-dropzone-label" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', width: '100%' }}>
+                      <Upload size={32} style={{ color: 'var(--text-muted)', marginBottom: '8px' }} />
+                      <span className="dropzone-title" style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--primary)' }}>Select Media to Import (Plain Bulk)</span>
+                      <span className="dropzone-subtitle" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Supported formats: JPG, PNG, WEBP, MP4, MOV, WEBM, MKV. Standard upload, no AI.</span>
+                      <input 
+                        type="file" 
+                        multiple 
+                        accept="image/*,video/*"
+                        ref={plainFileInputRef}
+                        onChange={(e) => handleBulkImportFiles(e, false)}
+                        className="bulk-file-input-plain"
+                        disabled={!cloudName || !uploadPreset}
+                        style={{ display: 'none' }}
+                      />
+                      <button 
+                        type="button" 
+                        className="btn btn-primary"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (plainFileInputRef.current) plainFileInputRef.current.click();
+                        }}
+                        disabled={!cloudName || !uploadPreset}
+                        style={{ marginTop: '16px' }}
+                      >
+                        Browse Files
+                      </button>
+                    </label>
+                  </div>
+                </>
               )}
-              
-              <div className="bulk-dropzone-wrapper" style={{ border: '2px dashed var(--border-color)', borderRadius: 'var(--radius-lg)', padding: '40px 20px', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.2s ease', backgroundColor: 'var(--bg-secondary)' }}>
-                <label className="bulk-dropzone-label" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', width: '100%' }}>
-                  <Upload size={32} style={{ color: 'var(--text-muted)', marginBottom: '8px' }} />
-                  <span className="dropzone-title" style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--primary)' }}>Select Images/Videos to Import</span>
-                  <span className="dropzone-subtitle" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Supported formats: JPG, PNG, WEBP, MP4, MOV, WEBM, MKV. You can upload multiple files at once.</span>
-                  <input 
-                    type="file" 
-                    multiple 
-                    accept="image/*,video/*"
-                    onChange={handleBulkImportFiles}
-                    className="bulk-file-input"
-                    disabled={!cloudName || !uploadPreset || !geminiApiKey}
-                    style={{ display: 'none' }}
-                  />
-                  <button 
-                    type="button" 
-                    className="btn btn-primary"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      const input = document.querySelector('.bulk-file-input');
-                      if (input) input.click();
-                    }}
-                    disabled={!cloudName || !uploadPreset || !geminiApiKey}
-                    style={{ marginTop: '16px' }}
-                  >
-                    Browse Files
-                  </button>
-                </label>
-              </div>
               
               {bulkQueue.length > 0 && (
                 <div className="bulk-queue-section" style={{ marginTop: '32px' }}>
