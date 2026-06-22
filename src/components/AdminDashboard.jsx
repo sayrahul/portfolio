@@ -372,7 +372,10 @@ export default function AdminDashboard({
       });
 
       const uploadedUrls = await Promise.all(uploadPromises);
-      setGallery(prev => [...prev, ...uploadedUrls]);
+      setGallery(prev => {
+        const combined = [...prev, ...uploadedUrls];
+        return Array.from(new Set(combined));
+      });
     } catch (err) {
       console.error("Gallery upload failed:", err);
       alert(`Gallery upload failed: ${err.message}`);
@@ -562,6 +565,54 @@ export default function AdminDashboard({
       handleCancelEdit();
       setSuccessMsg('Defaults restored successfully!');
       setTimeout(() => setSuccessMsg(''), 3000);
+    }
+  };
+
+  // Deduplicate Portfolio Database (Remove Duplicate Projects)
+  const handleDeduplicateDatabase = () => {
+    const seenTitles = new Set();
+    const seenMedia = new Set();
+    const deduplicated = [];
+    let removedCount = 0;
+
+    projectsList.forEach(project => {
+      const titleKey = project.title ? project.title.trim().toLowerCase() : '';
+      
+      // Check for identical media URLs (ignoring default Unsplash placeholders)
+      const mediaUrls = [];
+      if (project.thumbnail && !project.thumbnail.includes('images.unsplash.com')) {
+        mediaUrls.push(project.thumbnail.trim());
+      }
+      if (project.mainImage && !project.mainImage.includes('images.unsplash.com')) {
+        mediaUrls.push(project.mainImage.trim());
+      }
+      if (project.videoUrl) {
+        mediaUrls.push(project.videoUrl.trim());
+      }
+
+      const isDuplicateTitle = titleKey && seenTitles.has(titleKey);
+      const isDuplicateMedia = mediaUrls.some(url => seenMedia.has(url));
+
+      if (isDuplicateTitle || isDuplicateMedia) {
+        removedCount++;
+      } else {
+        if (titleKey) seenTitles.add(titleKey);
+        mediaUrls.forEach(url => seenMedia.add(url));
+        deduplicated.push(project);
+      }
+    });
+
+    if (removedCount === 0) {
+      alert("No duplicate projects found in your database.");
+      return;
+    }
+
+    if (window.confirm(`Found ${removedCount} duplicate project(s) based on identical titles or media URLs. Do you want to remove them?`)) {
+      setProjectsList(deduplicated);
+      localStorage.setItem('portfolio_projects_db', JSON.stringify(deduplicated));
+      window.dispatchEvent(new Event('portfolio_db_updated'));
+      setSuccessMsg(`Successfully removed ${removedCount} duplicate project(s)!`);
+      setTimeout(() => setSuccessMsg(''), 3500);
     }
   };
 
@@ -1481,6 +1532,10 @@ export default function AdminDashboard({
                             e.preventDefault();
                             const url = e.target.value.trim();
                             if (url) {
+                              if (gallery.includes(url)) {
+                                alert("This image is already in the gallery.");
+                                return;
+                              }
                               setGallery(prev => [...prev, url]);
                               e.target.value = '';
                             }
@@ -1493,7 +1548,12 @@ export default function AdminDashboard({
                         onClick={() => {
                           const input = document.getElementById('gallery-url-input');
                           if (input && input.value.trim()) {
-                            setGallery(prev => [...prev, input.value.trim()]);
+                            const url = input.value.trim();
+                            if (gallery.includes(url)) {
+                              alert("This image is already in the gallery.");
+                              return;
+                            }
+                            setGallery(prev => [...prev, url]);
                             input.value = '';
                           }
                         }}
@@ -1642,8 +1702,21 @@ export default function AdminDashboard({
           ) : (
             /* Portfolio Catalog Manager */
             <div className="admin-catalog-card card">
-            <h3 className="admin-card-title">Manage Portfolio Catalog ({projectsList.length})</h3>
-            <p className="admin-card-desc">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                <h3 className="admin-card-title" style={{ marginBottom: 0 }}>Manage Portfolio Catalog ({projectsList.length})</h3>
+                {projectsList.length > 0 && (
+                  <button 
+                    type="button"
+                    onClick={handleDeduplicateDatabase}
+                    className="btn btn-secondary"
+                    style={{ padding: '6px 12px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', background: 'rgba(239, 68, 68, 0.03)' }}
+                  >
+                    <Trash2 size={12} style={{ color: '#ef4444' }} />
+                    <span>Remove Duplicates</span>
+                  </button>
+                )}
+              </div>
+            <p className="admin-card-desc" style={{ marginTop: 0 }}>
               Edit tags, update visual assets, or delete projects directly from the portfolio database.
             </p>
             {projectsList.length === 0 ? (
