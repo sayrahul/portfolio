@@ -622,6 +622,19 @@ export default function AdminDashboard({
     }
   };
 
+  // Reset project AI status to pending for background reprocessing
+  const handleResetProjectAiStatus = (id) => {
+    const updated = projectsList.map(p => {
+      if (p.id === id) {
+        return { ...p, aiStatus: 'pending', aiError: '' };
+      }
+      return p;
+    });
+    setProjectsList(updated);
+    localStorage.setItem('portfolio_projects_db', JSON.stringify(updated));
+    window.dispatchEvent(new Event('portfolio_db_updated'));
+  };
+
   // Export Database to JSON
   const handleExportDatabase = () => {
     try {
@@ -1823,7 +1836,31 @@ export default function AdminDashboard({
                   <div key={proj.id} className="catalog-item-row">
                     <img src={proj.thumbnail} alt={proj.title} className="catalog-item-thumb" />
                     <div className="catalog-item-info">
-                      <h4 className="catalog-item-title">{proj.title}</h4>
+                      <h4 className="catalog-item-title" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                        <span>{proj.title}</span>
+                        {proj.aiStatus === 'pending' && <span className="ai-status-badge pending" style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', fontWeight: 'bold' }}>AI Pending</span>}
+                        {proj.aiStatus === 'processing' && <span className="ai-status-badge processing" style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', fontWeight: 'bold' }}>AI Processing...</span>}
+                        {proj.aiStatus === 'failed' && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span 
+                              className="ai-status-badge failed" 
+                              title={proj.aiError}
+                              style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontWeight: 'bold', cursor: 'help' }}
+                            >
+                              AI Failed ⚠️
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleResetProjectAiStatus(proj.id)}
+                              className="btn btn-secondary"
+                              style={{ padding: '2px 6px', fontSize: '0.60rem', height: 'auto', display: 'inline-flex', alignItems: 'center', gap: '2px', backgroundColor: 'rgba(147, 51, 234, 0.05)', color: '#9333ea', border: '1px solid rgba(147, 51, 234, 0.15)' }}
+                              title="Retry AI Enrichment"
+                            >
+                              Retry AI
+                            </button>
+                          </div>
+                        )}
+                      </h4>
                       <p className="catalog-item-meta">
                         <span className="cat-pill">{proj.category}</span>
                         <span className="subcat-pill">{proj.subcategory}</span>

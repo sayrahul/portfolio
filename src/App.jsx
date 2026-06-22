@@ -23,6 +23,28 @@ const getSafeSetting = (localKey, envVal, fallback) => {
   return fallback;
 };
 
+const imageUrlToBase64 = async (url) => {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result.split(',')[1];
+        resolve({
+          base64,
+          mimeType: blob.type
+        });
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (err) {
+    console.error("Failed to convert image to base64:", err);
+    return null;
+  }
+};
+
 export default function App() {
   const currentYear = new Date().getFullYear();
   const [currentHash, setCurrentHash] = useState(window.location.hash);
@@ -33,6 +55,8 @@ export default function App() {
   const [bulkQueue, setBulkQueue] = useState([]);
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
   const [hasCelebrated, setHasCelebrated] = useState(false);
+  const [isAiEnriching, setIsAiEnriching] = useState(false);
+  const [dbTrigger, setDbTrigger] = useState(0);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -99,7 +123,6 @@ export default function App() {
 
     const cloudName = getSafeSetting('cloudinary_cloud_name', import.meta.env.VITE_CLOUDINARY_CLOUD_NAME, 'dno3fddh9');
     const uploadPreset = getSafeSetting('cloudinary_upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET, 'uzxyc123');
-    const geminiApiKey = getSafeSetting('gemini_api_key', import.meta.env.VITE_GEMINI_API_KEY, '');
 
     updateItemStatus(itemId, { status: 'uploading', progress: 20 });
     let secureUrl = '';
@@ -128,7 +151,7 @@ export default function App() {
       const data = await response.json();
       secureUrl = data.secure_url;
       
-      // For video resources uploaded to Cloudinary, generate a thumbnail image URL automatically by changing the file extension to .jpg
+      // For video resources uploaded to Cloudinary, generate a snapshot poster automatically
       let videoThumbnail = '';
       if (isVideo && secureUrl.includes('cloudinary.com')) {
         const lastDot = secureUrl.lastIndexOf('.');
@@ -138,157 +161,20 @@ export default function App() {
       updateItemStatus(itemId, { 
         url: secureUrl, 
         thumbnail: isVideo ? videoThumbnail : secureUrl,
-        progress: 50 
+        progress: 80 
       });
 
-      // --- SKIP AI FOR VIDEO FILES OR PLAIN IMPORTS ---
-      if (isVideo || !useAi) {
-        updateItemStatus(itemId, { status: 'analyzing', progress: 80 });
-        
-        // Formulate a clean, human-readable title from the video file name
-        const lastDotIdx = file.name.lastIndexOf('.');
-        const rawTitle = lastDotIdx !== -1 ? file.name.substring(0, lastDotIdx) : file.name;
-        const resolvedTitle = rawTitle
-          .replace(/[-_]/g, ' ')
-          .replace(/\b\w/g, c => c.toUpperCase());
-        
-        const resolvedCategory = isVideo ? "Video Editing" : "Graphic Design";
-        const resolvedSubcategory = isVideo ? "Promos & Reels" : "Retouching";
-        const resolvedTools = isVideo ? ["Adobe Premiere Pro", "DaVinci Resolve"] : ["Adobe Photoshop"];
-        const iconType = isVideo ? "video" : "design";
-
-        const projectData = {
-          id: `${resolvedCategory.toLowerCase().replace(' ', '-')}-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-          title: resolvedTitle,
-          category: resolvedCategory,
-          subcategory: resolvedSubcategory,
-          tools: resolvedTools,
-          iconType,
-          thumbnail: isVideo ? videoThumbnail : secureUrl
-        };
-
-        if (resolvedCategory === 'Video Editing') {
-          projectData.videoUrl = secureUrl;
-          projectData.poster = videoThumbnail || 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800';
-        } else {
-          projectData.mainImage = secureUrl;
-        }
-
-        // Read current DB, append, and save
-        let currentDb = [];
-        try {
-          const storedDb = localStorage.getItem('portfolio_projects_db');
-          if (storedDb) {
-            currentDb = JSON.parse(storedDb);
-          }
-        } catch (e) {
-          console.error("Failed to parse projects db:", e);
-        }
-        const updatedDb = [projectData, ...currentDb];
-        localStorage.setItem('portfolio_projects_db', JSON.stringify(updatedDb));
-        
-        // Dispatch database update event so other components sync automatically
-        window.dispatchEvent(new Event('portfolio_db_updated'));
-
-        updateItemStatus(itemId, {
-          status: 'completed',
-          progress: 100,
-          title: resolvedTitle,
-          category: resolvedCategory,
-          subcategory: resolvedSubcategory,
-          tools: resolvedTools,
-          thumbnail: isVideo ? videoThumbnail : secureUrl
-        });
-        
-        setIsBulkProcessing(false);
-        return; // Complete item processing immediately
-      }
-
-    } catch (err) {
-      updateItemStatus(itemId, { status: 'failed', error: `Upload error: ${err.message}`, progress: 0 });
-      setIsBulkProcessing(false);
-      return;
-    }
-
-    updateItemStatus(itemId, { status: 'analyzing', progress: 75 });
-    try {
-      const base64Data = await fileToBase64(file);
-      if (!base64Data) {
-        throw new Error("Base64 conversion failed.");
-      }
-
-      // Determine clean mime type for inlineData (in case browser reports empty string)
-      let fileMime = base64Data.mimeType;
-      if (!fileMime || fileMime.trim() === '') {
-        if (file.name.endsWith('.mp4')) fileMime = 'video/mp4';
-        else if (file.name.endsWith('.mov')) fileMime = 'video/quicktime';
-        else if (file.name.endsWith('.webm')) fileMime = 'video/webm';
-        else if (file.name.endsWith('.mkv')) fileMime = 'video/x-matroska';
-        else fileMime = isVideo ? 'video/mp4' : 'image/jpeg';
-      }
-
-      const promptText = `Analyze this project ${isVideo ? 'video' : 'image'} and generate appropriate portfolio metadata. ` +
-                         `Determine a suitable creative title, primary category, sub-category, and tools/technologies used.\n\n` +
-                         `Respond with ONLY a valid JSON object. Do not include markdown code blocks, backticks, or any other wrapper text.\n` +
-                         `Schema:\n` +
-                         `{\n` +
-                         `  "title": "A short, clean, creative project title (max 45 characters)",\n` +
-                         `  "category": "${isVideo ? "Must be exactly 'Video Editing'" : "Must be exactly one of: 'Web Design', 'Graphic Design', or 'Video Editing'"}",\n` +
-                         `  "subcategory": "A single short sub-category tag chosen from the relevant category:\n` +
-                         `     - For Web Design: SaaS Systems, Landing Pages, E-Commerce, Portfolio Sites, Corporate Websites, Web Applications\n` +
-                         `     - For Graphic Design: Retouching, Packaging & Print, Branding, Social Media Creatives, Logo Design, Illustrations\n` +
-                         `     - For Video Editing: Promos & Reels, Social Content, YouTube Videos, Cinematic Videos, Corporate Promos",\n` +
-                         `  "tools": ["Array of tools used, chosen or inferred from: Figma, Adobe Photoshop, Adobe Illustrator, Adobe After Effects, Adobe Premiere Pro, DaVinci Resolve, Lightroom, Adobe InDesign, React, Tailwind CSS, HTML/CSS, Vanilla CSS, UI/UX Design, Sound Design"]\n` +
-                         `}`;
-
-      const parts = [
-        { text: promptText },
-        {
-          inlineData: {
-            mimeType: fileMime,
-            data: base64Data.base64
-          }
-        }
-      ];
-
-      const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts }] })
-      });
-
-      if (!aiResponse.ok) {
-        const errorData = await aiResponse.json().catch(() => ({}));
-        const detailedMsg = errorData?.error?.message || `API call failed with status ${aiResponse.status}`;
-        throw new Error(`Gemini AI API call failed: ${detailedMsg}`);
-      }
-
-      const aiData = await aiResponse.json();
-      const textResponse = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!textResponse) {
-        throw new Error("Empty response from AI model.");
-      }
-
-      const cleanJsonStr = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-      const result = JSON.parse(cleanJsonStr);
-
-      const validCategories = ["Web Design", "Graphic Design", "Video Editing"];
-      const resolvedCategory = isVideo ? "Video Editing" : (validCategories.includes(result.category) ? result.category : "Graphic Design");
-      const resolvedTitle = result.title || "AI Implemented Piece";
-      const predefinedSub = CATEGORY_SUBCATEGORIES[resolvedCategory] || [];
-      const resolvedSubcategory = result.subcategory || predefinedSub[0] || "General";
-      const resolvedTools = Array.isArray(result.tools) ? result.tools : [];
-
-      let iconType = 'web';
-      if (resolvedCategory === 'Graphic Design') iconType = 'design';
-      else if (resolvedCategory === 'Video Editing') iconType = 'video';
-
-      // Generate video thumbnail URL if it is a Cloudinary video
-      let videoThumbnail = '';
-      if (isVideo && secureUrl.includes('cloudinary.com')) {
-        const lastDot = secureUrl.lastIndexOf('.');
-        videoThumbnail = lastDot !== -1 ? secureUrl.substring(0, lastDot) + '.jpg' : secureUrl + '.jpg';
-      }
+      // --- CREATE PROJECT DATA IMMEDIATELY ---
+      const lastDotIdx = file.name.lastIndexOf('.');
+      const rawTitle = lastDotIdx !== -1 ? file.name.substring(0, lastDotIdx) : file.name;
+      const resolvedTitle = rawTitle
+        .replace(/[-_]/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase());
+      
+      const resolvedCategory = isVideo ? "Video Editing" : "Graphic Design";
+      const resolvedSubcategory = isVideo ? "Promos & Reels" : "Retouching";
+      const resolvedTools = isVideo ? ["Adobe Premiere Pro", "DaVinci Resolve"] : ["Adobe Photoshop"];
+      const iconType = isVideo ? "video" : "design";
 
       const projectData = {
         id: `${resolvedCategory.toLowerCase().replace(' ', '-')}-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -297,12 +183,13 @@ export default function App() {
         subcategory: resolvedSubcategory,
         tools: resolvedTools,
         iconType,
-        thumbnail: isVideo ? videoThumbnail : secureUrl
+        thumbnail: isVideo ? videoThumbnail : secureUrl,
+        aiStatus: useAi ? 'pending' : undefined
       };
 
       if (resolvedCategory === 'Video Editing') {
         projectData.videoUrl = secureUrl;
-        projectData.poster = isVideo ? videoThumbnail : 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800';
+        projectData.poster = videoThumbnail || 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800';
       } else {
         projectData.mainImage = secureUrl;
       }
@@ -332,11 +219,14 @@ export default function App() {
         tools: resolvedTools,
         thumbnail: isVideo ? videoThumbnail : secureUrl
       });
+      
+      setIsBulkProcessing(false);
+      return;
 
     } catch (err) {
-      updateItemStatus(itemId, { status: 'failed', error: `AI error: ${err.message}`, progress: 0 });
-    } finally {
+      updateItemStatus(itemId, { status: 'failed', error: `Upload error: ${err.message}`, progress: 0 });
       setIsBulkProcessing(false);
+      return;
     }
   };
 
@@ -418,6 +308,180 @@ export default function App() {
       setHasCelebrated(true);
     }
   }, [bulkQueue, hasCelebrated]);
+
+  // Listen for database updates from other tabs/actions to trigger background AI worker
+  useEffect(() => {
+    const handleDbUpdate = () => {
+      setDbTrigger(prev => prev + 1);
+    };
+    window.addEventListener('portfolio_db_updated', handleDbUpdate);
+    return () => window.removeEventListener('portfolio_db_updated', handleDbUpdate);
+  }, []);
+
+  // Background AI worker observer (Relax Mode)
+  useEffect(() => {
+    if (isAiEnriching) return;
+
+    let db = [];
+    try {
+      const storedDb = localStorage.getItem('portfolio_projects_db');
+      if (storedDb) {
+        db = JSON.parse(storedDb);
+      } else {
+        return;
+      }
+    } catch (e) {
+      console.error("Failed to read projects db:", e);
+      return;
+    }
+
+    const pendingProject = db.find(p => p.aiStatus === 'pending');
+    if (!pendingProject) return;
+
+    // Run the background enricher
+    const enrichProjectWithAi = async () => {
+      setIsAiEnriching(true);
+
+      // 1. Mark status as 'processing' in the local DB and state immediately
+      const updateProjectStatus = (status, error = '') => {
+        try {
+          const stored = localStorage.getItem('portfolio_projects_db');
+          if (stored) {
+            const currentList = JSON.parse(stored);
+            const updatedList = currentList.map(proj => {
+              if (proj.id === pendingProject.id) {
+                return { ...proj, aiStatus: status, aiError: error };
+              }
+              return proj;
+            });
+            localStorage.setItem('portfolio_projects_db', JSON.stringify(updatedList));
+            window.dispatchEvent(new Event('portfolio_db_updated'));
+          }
+        } catch (e) {
+          console.error("Failed to update project status:", e);
+        }
+      };
+
+      updateProjectStatus('processing');
+
+      // 2. ENFORCE RELAX MODE DELAY: Wait 5 seconds to stay safely under rate limits
+      await new Promise(resolve => setTimeout(resolve, 5000));
+
+      const geminiApiKey = getSafeSetting('gemini_api_key', import.meta.env.VITE_GEMINI_API_KEY, '');
+      if (!geminiApiKey) {
+        updateProjectStatus('failed', 'Gemini API Key is missing. Please configure it in settings.');
+        setIsAiEnriching(false);
+        return;
+      }
+
+      try {
+        // 3. Convert image to base64
+        const base64Data = await imageUrlToBase64(pendingProject.thumbnail);
+        if (!base64Data) {
+          throw new Error("Could not fetch image to convert to base64.");
+        }
+
+        // 4. Prompt
+        const promptText = `Analyze this project image and generate appropriate portfolio metadata. ` +
+                           `Determine a suitable creative title, primary category, sub-category, and tools/technologies used.\n\n` +
+                           `Respond with ONLY a valid JSON object. Do not include markdown code blocks, backticks, or any other wrapper text.\n` +
+                           `Schema:\n` +
+                           `{\n` +
+                           `  "title": "A short, clean, creative project title (max 45 characters)",\n` +
+                           `  "category": "Must be exactly one of: 'Web Design', 'Graphic Design', or 'Video Editing'",\n` +
+                           `  "subcategory": "A single short sub-category tag chosen from the relevant category:\n` +
+                           `     - For Web Design: SaaS Systems, Landing Pages, E-Commerce, Portfolio Sites, Corporate Websites, Web Applications\n` +
+                           `     - For Graphic Design: Retouching, Packaging & Print, Branding, Social Media Creatives, Logo Design, Illustrations\n` +
+                           `     - For Video Editing: Promos & Reels, Social Content, YouTube Videos, Cinematic Videos, Corporate Promos",\n` +
+                           `  "tools": ["Array of tools used, chosen or inferred from: Figma, Adobe Photoshop, Adobe Illustrator, Adobe After Effects, Adobe Premiere Pro, DaVinci Resolve, Lightroom, Adobe InDesign, React, Tailwind CSS, HTML/CSS, Vanilla CSS, UI/UX Design, Sound Design"]\n` +
+                           `}`;
+
+        const parts = [
+          { text: promptText },
+          {
+            inlineData: {
+              mimeType: base64Data.mimeType,
+              data: base64Data.base64
+            }
+          }
+        ];
+
+        const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts }] })
+        });
+
+        if (!aiResponse.ok) {
+          const errorData = await aiResponse.json().catch(() => ({}));
+          const detailedMsg = errorData?.error?.message || `API call failed with status ${aiResponse.status}`;
+          throw new Error(detailedMsg);
+        }
+
+        const aiData = await aiResponse.json();
+        const textResponse = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!textResponse) {
+          throw new Error("Empty response from AI model.");
+        }
+
+        const cleanJsonStr = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+        const result = JSON.parse(cleanJsonStr);
+
+        const validCategories = ["Web Design", "Graphic Design", "Video Editing"];
+        const resolvedCategory = validCategories.includes(result.category) ? result.category : "Graphic Design";
+        const resolvedTitle = result.title || pendingProject.title;
+        const predefinedSub = CATEGORY_SUBCATEGORIES[resolvedCategory] || [];
+        const resolvedSubcategory = result.subcategory || predefinedSub[0] || "General";
+        const resolvedTools = Array.isArray(result.tools) ? result.tools : [];
+
+        let iconType = 'web';
+        if (resolvedCategory === 'Graphic Design') iconType = 'design';
+        else if (resolvedCategory === 'Video Editing') iconType = 'video';
+
+        // 5. Update local storage with enriched metadata
+        try {
+          const stored = localStorage.getItem('portfolio_projects_db');
+          if (stored) {
+            const currentList = JSON.parse(stored);
+            const updatedList = currentList.map(proj => {
+              if (proj.id === pendingProject.id) {
+                const updatedProj = {
+                  ...proj,
+                  title: resolvedTitle,
+                  category: resolvedCategory,
+                  subcategory: resolvedSubcategory,
+                  tools: resolvedTools,
+                  iconType,
+                  aiStatus: 'completed',
+                  aiError: ''
+                };
+                if (resolvedCategory === 'Video Editing') {
+                  updatedProj.videoUrl = proj.thumbnail;
+                  updatedProj.poster = proj.thumbnail;
+                } else {
+                  updatedProj.mainImage = proj.thumbnail;
+                }
+                return updatedProj;
+              }
+              return proj;
+            });
+            localStorage.setItem('portfolio_projects_db', JSON.stringify(updatedList));
+            window.dispatchEvent(new Event('portfolio_db_updated'));
+          }
+        } catch (e) {
+          console.error("Failed to save enriched project:", e);
+        }
+
+      } catch (err) {
+        console.error(`AI Enrichment error for project ${pendingProject.id}:`, err);
+        updateProjectStatus('failed', err.message);
+      } finally {
+        setIsAiEnriching(false);
+      }
+    };
+
+    enrichProjectWithAi();
+  }, [dbTrigger, isAiEnriching]);
 
   const isResumeView = currentHash === '#/resume';
   const isContactView = currentHash === '#/contact';
