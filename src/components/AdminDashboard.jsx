@@ -772,6 +772,62 @@ export default function AdminDashboard({
             </div>
           )}
 
+          {/* Settings Box (accessible globally across all tabs) */}
+          {showSettings && (
+            <div className="admin-settings-card card fade-in">
+              <h3 className="admin-card-title"><Settings size={18} /> Configurations & Integrations</h3>
+              <p className="admin-card-desc">
+                Configure Cloudinary unsigned uploads and Gemini API settings.
+              </p>
+              <form onSubmit={handleSaveSettings} className="admin-form">
+                <div className="form-group">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label className="form-label">Cloudinary Cloud Name</label>
+                    <span style={{ fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: cloudName === 'dno3fddh9' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: cloudName === 'dno3fddh9' ? '#3b82f6' : '#10b981', fontWeight: '500' }}>
+                      {cloudName === 'dno3fddh9' ? 'Default Account' : 'Custom'}
+                    </span>
+                  </div>
+                  <input 
+                    type="text" 
+                    value={cloudName} 
+                    onChange={e => setCloudName(e.target.value)} 
+                    placeholder="Enter your Cloud Name"
+                    className="form-input" 
+                  />
+                </div>
+                <div className="form-group">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label className="form-label">Cloudinary Unsigned Upload Preset</label>
+                    <span style={{ fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: uploadPreset === 'uzxyc123' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: uploadPreset === 'uzxyc123' ? '#3b82f6' : '#10b981', fontWeight: '500' }}>
+                      {uploadPreset === 'uzxyc123' ? 'Default Preset' : 'Custom'}
+                    </span>
+                  </div>
+                  <input 
+                    type="text" 
+                    value={uploadPreset} 
+                    onChange={e => setUploadPreset(e.target.value)} 
+                    placeholder="e.g. preset_123"
+                    className="form-input" 
+                  />
+                </div>
+                <div className="form-group border-top-form" style={{ paddingTop: '16px', marginTop: '8px' }}>
+                  <label className="form-label">Gemini API Key</label>
+                  <input 
+                    type="password" 
+                    value={geminiApiKey} 
+                    onChange={e => setGeminiApiKey(e.target.value)} 
+                    placeholder="AI auto-fill key (e.g. AIzaSy...)"
+                    className="form-input" 
+                  />
+                  <p className="form-input-help" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                    Required for the AI Auto-fill features. You can get a free key from Google AI Studio.
+                  </p>
+                </div>
+                <button type="submit" className="btn btn-primary">Save Settings</button>
+              </form>
+            </div>
+          )}
+
           {activeTab === 'analytics' ? (
             <div className="admin-analytics-dashboard fade-in">
               <div className="analytics-header">
@@ -1006,10 +1062,33 @@ export default function AdminDashboard({
               </p>
               
               {(!cloudName || !uploadPreset || !geminiApiKey) && (
-                <div className="login-error-box alert alert-danger fade-in" style={{ backgroundColor: 'rgba(239, 68, 68, 0.08)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-                  <AlertCircle size={16} />
+                <div className="login-error-box alert alert-danger fade-in" style={{ backgroundColor: 'rgba(239, 68, 68, 0.08)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.2)', marginBottom: '20px' }}>
+                  <AlertCircle size={16} style={{ flexShrink: 0 }} />
                   <span>
-                    <strong>Configuration Missing:</strong> Please check and save your Cloudinary settings and Gemini API key in the configurations tab first.
+                    <strong>Configuration Missing:</strong>{' '}
+                    {!cloudName || !uploadPreset ? (
+                      !geminiApiKey ? (
+                        <>Both <strong>Cloudinary credentials</strong> and the <strong>Gemini API Key</strong> are missing. Please configure them in the </>
+                      ) : (
+                        <><strong>Cloudinary credentials</strong> are missing. Please configure them in the </>
+                      )
+                    ) : (
+                      <>Your <strong>Gemini API Key</strong> is missing (required for AI auto-tagging). Please save it in the </>
+                    )}
+                    <button 
+                      type="button"
+                      onClick={() => { 
+                        setShowSettings(true); 
+                        setTimeout(() => { 
+                          const el = document.querySelector('.admin-settings-card'); 
+                          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
+                        }, 100); 
+                      }} 
+                      style={{ background: 'none', border: 'none', color: '#60a5fa', textDecoration: 'underline', padding: 0, cursor: 'pointer', font: 'inherit', display: 'inline', fontWeight: 'bold' }}
+                    >
+                      settings panel
+                    </button>
+                    {' '}first.
                   </span>
                 </div>
               )}
@@ -1111,59 +1190,26 @@ export default function AdminDashboard({
             </div>
           )}
 
-          {/* Settings Box */}
-          {showSettings && (
-            <div className="admin-settings-card card fade-in">
-              <h3 className="admin-card-title"><Settings size={18} /> Configurations & Integrations</h3>
-              <p className="admin-card-desc">
-                Configure Cloudinary unsigned uploads and Gemini API settings.
-              </p>
-              <form onSubmit={handleSaveSettings} className="admin-form">
-                <div className="form-group">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <label className="form-label">Cloudinary Cloud Name</label>
-                    <span style={{ fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: cloudName === 'dno3fddh9' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: cloudName === 'dno3fddh9' ? '#3b82f6' : '#10b981', fontWeight: '500' }}>
-                      {cloudName === 'dno3fddh9' ? 'Default Account' : 'Custom'}
-                    </span>
-                  </div>
-                  <input 
-                    type="text" 
-                    value={cloudName} 
-                    onChange={e => setCloudName(e.target.value)} 
-                    placeholder="Enter your Cloud Name"
-                    className="form-input" 
-                  />
-                </div>
-                <div className="form-group">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <label className="form-label">Cloudinary Unsigned Upload Preset</label>
-                    <span style={{ fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: uploadPreset === 'uzxyc123' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: uploadPreset === 'uzxyc123' ? '#3b82f6' : '#10b981', fontWeight: '500' }}>
-                      {uploadPreset === 'uzxyc123' ? 'Default Preset' : 'Custom'}
-                    </span>
-                  </div>
-                  <input 
-                    type="text" 
-                    value={uploadPreset} 
-                    onChange={e => setUploadPreset(e.target.value)} 
-                    placeholder="e.g. preset_123"
-                    className="form-input" 
-                  />
-                </div>
-                <div className="form-group border-top-form" style={{ paddingTop: '16px', marginTop: '8px' }}>
-                  <label className="form-label">Gemini API Key</label>
-                  <input 
-                    type="password" 
-                    value={geminiApiKey} 
-                    onChange={e => setGeminiApiKey(e.target.value)} 
-                    placeholder="AI auto-fill key (e.g. AIzaSy...)"
-                    className="form-input" 
-                  />
-                  <p className="form-input-help" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                    Required for the AI Auto-fill features. You can get a free key from Google AI Studio.
-                  </p>
-                </div>
-                <button type="submit" className="btn btn-primary">Save Settings</button>
-              </form>
+          {/* Cloudinary Warning Box */}
+          {(!cloudName || !uploadPreset) && (
+            <div className="login-error-box alert alert-warning fade-in" style={{ backgroundColor: 'rgba(245, 158, 11, 0.08)', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.2)', marginBottom: '20px', borderRadius: 'var(--radius-md)', padding: '12px', display: 'flex', gap: '8px', alignItems: 'center', fontSize: '0.85rem' }}>
+              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+              <span>
+                <strong>Cloudinary Settings Missing:</strong> Direct file uploading is disabled. You can still paste direct URLs or configure Cloudinary in the{' '}
+                <button 
+                  type="button"
+                  onClick={() => { 
+                    setShowSettings(true); 
+                    setTimeout(() => { 
+                      const el = document.querySelector('.admin-settings-card'); 
+                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
+                    }, 100); 
+                  }} 
+                  style={{ background: 'none', border: 'none', color: '#60a5fa', textDecoration: 'underline', padding: 0, cursor: 'pointer', font: 'inherit', display: 'inline', fontWeight: 'bold' }}
+                >
+                  settings panel
+                </button>.
+              </span>
             </div>
           )}
 
