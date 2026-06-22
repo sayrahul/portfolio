@@ -262,7 +262,9 @@ export default function AdminDashboard({
       });
 
       if (!response.ok) {
-        throw new Error("Gemini API call failed.");
+        const errorData = await response.json().catch(() => ({}));
+        const detailedMsg = errorData?.error?.message || `API call failed with status ${response.status}`;
+        throw new Error(`Gemini AI API call failed: ${detailedMsg}`);
       }
 
       const data = await response.json();
@@ -288,7 +290,7 @@ export default function AdminDashboard({
 
     } catch (err) {
       console.error("AI Generation failed:", err);
-      alert("AI Generation failed. Make sure your Gemini API Key is valid and images/assets are accessible.");
+      alert(`AI Generation failed: ${err.message}\n\nMake sure your Gemini API Key is valid and images/assets are accessible.`);
     } finally {
       setIsAiLoading(false);
     }

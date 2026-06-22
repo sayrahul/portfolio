@@ -258,7 +258,9 @@ export default function App() {
       });
 
       if (!aiResponse.ok) {
-        throw new Error("Gemini AI API call failed.");
+        const errorData = await aiResponse.json().catch(() => ({}));
+        const detailedMsg = errorData?.error?.message || `API call failed with status ${aiResponse.status}`;
+        throw new Error(`Gemini AI API call failed: ${detailedMsg}`);
       }
 
       const aiData = await aiResponse.json();
