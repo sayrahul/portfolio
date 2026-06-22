@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Save, Upload, Trash2, Settings, Sparkles, RefreshCw, AlertCircle, Pencil, X, Lock, User, LogOut, CheckSquare, Square, Plus, FolderOpen, BarChart2 } from 'lucide-react';
+import { ArrowLeft, Save, Upload, Trash2, Settings, Sparkles, RefreshCw, AlertCircle, Pencil, X, Lock, User, LogOut, CheckSquare, Square, Plus, FolderOpen, BarChart2, Download } from 'lucide-react';
 import { PROJECTS } from '../data/projects';
 import './AdminDashboard.css';
 
@@ -47,6 +47,18 @@ export const CATEGORY_SUBCATEGORIES = {
   ]
 };
 
+// Robust helper to retrieve configuration values, handling empty, null, or undefined strings (which can occur in CI/CD builds or localStorage state)
+const getSafeSetting = (localKey, envVal, fallback) => {
+  const local = localStorage.getItem(localKey);
+  if (local && local !== 'null' && local !== 'undefined' && local.trim() !== '') {
+    return local;
+  }
+  if (envVal && envVal !== 'null' && envVal !== 'undefined' && envVal.trim() !== '') {
+    return envVal;
+  }
+  return fallback;
+};
+
 export default function AdminDashboard({
   bulkQueue = [],
   setBulkQueue,
@@ -63,8 +75,8 @@ export default function AdminDashboard({
   const [hoveredCategory, setHoveredCategory] = useState(null);
 
   // Cloudinary Settings
-  const [cloudName, setCloudName] = useState(() => localStorage.getItem('cloudinary_cloud_name') || import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dno3fddh9');
-  const [uploadPreset, setUploadPreset] = useState(() => localStorage.getItem('cloudinary_upload_preset') || import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'uzxyc123');
+  const [cloudName, setCloudName] = useState(() => getSafeSetting('cloudinary_cloud_name', import.meta.env.VITE_CLOUDINARY_CLOUD_NAME, 'dno3fddh9'));
+  const [uploadPreset, setUploadPreset] = useState(() => getSafeSetting('cloudinary_upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET, 'uzxyc123'));
   const [showSettings, setShowSettings] = useState(false);
 
   // Projects Database List (unified database, default + custom)
@@ -116,7 +128,7 @@ export default function AdminDashboard({
   const [gallery, setGallery] = useState([]);
   const [videoUrl, setVideoUrl] = useState('');
   const [poster, setPoster] = useState('');
-  const [geminiApiKey, setGeminiApiKey] = useState(() => localStorage.getItem('gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '');
+  const [geminiApiKey, setGeminiApiKey] = useState(() => getSafeSetting('gemini_api_key', import.meta.env.VITE_GEMINI_API_KEY, ''));
   const [isAiLoading, setIsAiLoading] = useState(false);
 
   // UI status
@@ -295,8 +307,10 @@ export default function AdminDashboard({
     formData.append('upload_preset', uploadPreset);
 
     try {
-      // Determine correct Cloudinary endpoint (image vs video) based on file MIME type
-      const isVideo = file.type.startsWith('video/');
+      // Determine correct Cloudinary endpoint (image vs video) based on file MIME type or extension
+      const isVideoType = file.type ? file.type.startsWith('video/') : false;
+      const isVideoExtension = /\.(mp4|webm|ogg|mov|avi|mkv|wmv|flv|m4v)$/i.test(file.name);
+      const isVideo = isVideoType || isVideoExtension;
       const resourceType = isVideo ? 'video' : 'image';
 
       const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`, {
@@ -305,7 +319,8 @@ export default function AdminDashboard({
       });
       
       if (!response.ok) {
-        throw new Error("Upload failed. Verify Cloudinary credentials.");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData?.error?.message || "Upload failed. Verify Cloudinary credentials.");
       }
       
       const data = await response.json();
@@ -319,7 +334,7 @@ export default function AdminDashboard({
 
     } catch (err) {
       console.error("Cloudinary upload failed:", err);
-      alert("Direct upload failed. Make sure your upload preset is configured as 'Unsigned' in your Cloudinary Settings.");
+      alert(`Direct upload failed: ${err.message}\n\nMake sure your Cloudinary settings are correct.`);
     } finally {
       setUploadingField(null);
     }
@@ -348,7 +363,8 @@ export default function AdminDashboard({
         });
 
         if (!response.ok) {
-          throw new Error("Upload failed. Verify Cloudinary credentials.");
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData?.error?.message || "Verify Cloudinary credentials.");
         }
 
         const data = await response.json();
@@ -359,7 +375,7 @@ export default function AdminDashboard({
       setGallery(prev => [...prev, ...uploadedUrls]);
     } catch (err) {
       console.error("Gallery upload failed:", err);
-      alert("Some files failed to upload. Make sure your upload preset is configured as 'Unsigned' in your Cloudinary Settings.");
+      alert(`Gallery upload failed: ${err.message}`);
     } finally {
       setUploadingField(null);
     }
@@ -502,7 +518,7 @@ export default function AdminDashboard({
         id: `${category.toLowerCase().replace(' ', '-')}-${Date.now()}`,
         ...projectData
       };
-      updatedList = [...projectsList, newProj];
+      updatedList = [newProj, ...projectsList];
       setSuccessMsg('New project added successfully!');
     }
 
@@ -546,6 +562,26 @@ export default function AdminDashboard({
       handleCancelEdit();
       setSuccessMsg('Defaults restored successfully!');
       setTimeout(() => setSuccessMsg(''), 3000);
+    }
+  };
+
+  // Export Database to JSON
+  const handleExportDatabase = () => {
+    try {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projectsList, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "projects.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+
+      // Also copy to clipboard for convenience
+      navigator.clipboard.writeText(JSON.stringify(projectsList, null, 2));
+      alert("Database exported successfully!\n\n1. projects.json has been downloaded.\n2. The JSON data has been copied to your clipboard.\n\nTo make these uploads permanent for all visitors on your live website:\nReplace the contents of 'src/data/projects.js' with this exported data, commit, and deploy your site.");
+    } catch (err) {
+      console.error("Failed to export database:", err);
+      alert("Failed to export database: " + err.message);
     }
   };
 
@@ -705,6 +741,14 @@ export default function AdminDashboard({
           >
             <RefreshCw size={16} />
             <span className="btn-label-desktop">Restore Defaults</span>
+          </button>
+          <button 
+            onClick={handleExportDatabase} 
+            className="admin-action-icon-btn"
+            title="Export Database JSON"
+          >
+            <Download size={16} />
+            <span className="btn-label-desktop">Export DB</span>
           </button>
           <button 
             onClick={handleLogout} 
@@ -1076,7 +1120,12 @@ export default function AdminDashboard({
               </p>
               <form onSubmit={handleSaveSettings} className="admin-form">
                 <div className="form-group">
-                  <label className="form-label">Cloudinary Cloud Name</label>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label className="form-label">Cloudinary Cloud Name</label>
+                    <span style={{ fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: cloudName === 'dno3fddh9' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: cloudName === 'dno3fddh9' ? '#3b82f6' : '#10b981', fontWeight: '500' }}>
+                      {cloudName === 'dno3fddh9' ? 'Default Account' : 'Custom'}
+                    </span>
+                  </div>
                   <input 
                     type="text" 
                     value={cloudName} 
@@ -1086,7 +1135,12 @@ export default function AdminDashboard({
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Cloudinary Unsigned Upload Preset</label>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label className="form-label">Cloudinary Unsigned Upload Preset</label>
+                    <span style={{ fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: uploadPreset === 'uzxyc123' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: uploadPreset === 'uzxyc123' ? '#3b82f6' : '#10b981', fontWeight: '500' }}>
+                      {uploadPreset === 'uzxyc123' ? 'Default Preset' : 'Custom'}
+                    </span>
+                  </div>
                   <input 
                     type="text" 
                     value={uploadPreset} 

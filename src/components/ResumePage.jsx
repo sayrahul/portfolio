@@ -260,10 +260,10 @@ export default function ResumePage() {
                   <h1 className="banner-fullname-text">Rahul Jadhav</h1>
                   <h2 className="banner-subtitle-tag">{FOCUS_DETAILS[resumeFocus].subtitle}</h2>
                   <div className="banner-social-row">
-                    <a href="https://behance.net/sayrahul" target="_blank" rel="noopener noreferrer" className="social-icon-link" title="Behance"><BehanceIcon /></a>
-                    <a href="https://linkedin.com/in/rahuljadhav44" target="_blank" rel="noopener noreferrer" className="social-icon-link" title="LinkedIn"><LinkedinIcon /></a>
-                    <a href="https://github.com/sayrahul" target="_blank" rel="noopener noreferrer" className="social-icon-link" title="GitHub"><GithubIcon /></a>
-                    <a href="https://youtube.com/@Say_Rahul" target="_blank" rel="noopener noreferrer" className="social-icon-link" title="YouTube"><YoutubeIcon /></a>
+                    <a href="https://behance.net/sayrahul" target="_blank" rel="noopener noreferrer" className="social-icon-link" title="Behance"><BehanceIcon size={18} /></a>
+                    <a href="https://linkedin.com/in/rahuljadhav44" target="_blank" rel="noopener noreferrer" className="social-icon-link" title="LinkedIn"><LinkedinIcon size={18} /></a>
+                    <a href="https://github.com/sayrahul" target="_blank" rel="noopener noreferrer" className="social-icon-link" title="GitHub"><GithubIcon size={18} /></a>
+                    <a href="https://youtube.com/@Say_Rahul" target="_blank" rel="noopener noreferrer" className="social-icon-link" title="YouTube"><YoutubeIcon size={18} /></a>
                   </div>
                 </div>
               </div>
@@ -311,55 +311,75 @@ export default function ResumePage() {
           {/* 2. Main Two-Column Grid Content */}
           <div className="dashboard-grid">
             
-            {/* Left Column: Interactive Skills Grid */}
+            {/* Left Column: Interactive Skills Grid & Education History */}
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
-              className="dashboard-main-card card"
+              className="dashboard-left-column"
+              style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <h3 className="dashboard-section-header" style={{ marginBottom: 0 }}>Interactive Skills Grid</h3>
-                {resumeFocus === 'all' && (
-                  <span className="badge" style={{ textTransform: 'none' }}>Hover skill to find jobs</span>
-                )}
-              </div>
-              <p className="skills-intro-paragraph" style={{ marginBottom: '24px' }}>
-                {resumeFocus === 'all' 
-                  ? "Hovering over any skill highlights the specific companies on your timeline where you applied this competency."
-                  : `Currently highlighting technical competencies related to ${FOCUS_DETAILS[resumeFocus].subtitle}.`}
-              </p>
-              
-              <div className="dashboard-skills-grid">
-                {RESUME_SKILLS.map((skill, idx) => {
-                  const isHighlightedByFocus = resumeFocus !== 'all' && FOCUS_SKILLS_MAP[resumeFocus]?.includes(skill.name);
-                  const isDimmedByFocus = resumeFocus !== 'all' && !isHighlightedByFocus;
-                  const isHovered = hoveredSkill === skill.name;
+              <div className="dashboard-main-card card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <h3 className="dashboard-section-header" style={{ marginBottom: 0 }}>Interactive Skills Grid</h3>
+                  {resumeFocus === 'all' && (
+                    <span className="badge" style={{ textTransform: 'none' }}>Hover skill to find jobs</span>
+                  )}
+                </div>
+                <p className="skills-intro-paragraph" style={{ marginBottom: '24px' }}>
+                  {resumeFocus === 'all' 
+                    ? "Hovering over any skill highlights the specific companies on your timeline where you applied this competency."
+                    : `Currently highlighting technical competencies related to ${FOCUS_DETAILS[resumeFocus].subtitle}.`}
+                </p>
+                
+                <div className="dashboard-skills-grid">
+                  {RESUME_SKILLS.map((skill, idx) => {
+                    const isHighlightedByFocus = resumeFocus !== 'all' && FOCUS_SKILLS_MAP[resumeFocus]?.includes(skill.name);
+                    const isDimmedByFocus = resumeFocus !== 'all' && !isHighlightedByFocus;
+                    const isHovered = hoveredSkill === skill.name;
 
-                  return (
-                    <div 
-                      key={idx} 
-                      className={`dashboard-skill-card ${isHovered || isHighlightedByFocus ? 'focused' : ''} ${isDimmedByFocus ? 'dimmed-skill' : ''}`}
-                      onMouseEnter={() => resumeFocus === 'all' && setHoveredSkill(skill.name)}
-                      onMouseLeave={() => resumeFocus === 'all' && setHoveredSkill(null)}
-                    >
-                      <div className="skill-card-meta">
-                        <span className="skill-card-name">{skill.name}</span>
-                        <span className="skill-card-rating">{skill.rating} ({skill.level}%)</span>
+                    return (
+                      <div 
+                        key={idx} 
+                        className={`dashboard-skill-card ${isHovered || isHighlightedByFocus ? 'focused' : ''} ${isDimmedByFocus ? 'dimmed-skill' : ''}`}
+                        onMouseEnter={() => resumeFocus === 'all' && setHoveredSkill(skill.name)}
+                        onMouseLeave={() => resumeFocus === 'all' && setHoveredSkill(null)}
+                      >
+                        <div className="skill-card-meta">
+                          <span className="skill-card-name">{skill.name}</span>
+                          <span className="skill-card-rating">{skill.rating} ({skill.level}%)</span>
+                        </div>
+                        <div className="skill-card-meter">
+                          <div 
+                            className="skill-card-meter-fill"
+                            style={{ width: skillsAnimated ? `${skill.level}%` : '0%' }}
+                          ></div>
+                        </div>
                       </div>
-                      <div className="skill-card-meter">
-                        <div 
-                          className="skill-card-meter-fill"
-                          style={{ width: skillsAnimated ? `${skill.level}%` : '0%' }}
-                        ></div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Education Grid Card */}
+              <div className="dashboard-main-card card">
+                <h3 className="dashboard-section-header">Education History</h3>
+                <div className="education-dashboard-grid">
+                  {RESUME_EDUCATION.map((edu, idx) => (
+                    <div key={idx} className="edu-dashboard-card card">
+                      <div className="edu-dash-header-row">
+                        <span className="edu-dash-year">{edu.period}</span>
+                        <span className="badge edu-dash-score">{edu.score}</span>
                       </div>
+                      <h4 className="edu-dash-degree">{edu.degree}</h4>
+                      <p className="edu-dash-inst">{edu.institution}</p>
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
             </motion.div>
 
-            {/* Right Column: Timeline Experience & Education */}
+            {/* Right Column: Timeline Experience */}
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -417,23 +437,6 @@ export default function ResumePage() {
                       </div>
                     );
                   })}
-                </div>
-              </div>
-
-              {/* Education Grid Card */}
-              <div className="dashboard-main-card card">
-                <h3 className="dashboard-section-header">Education History</h3>
-                <div className="education-dashboard-grid">
-                  {RESUME_EDUCATION.map((edu, idx) => (
-                    <div key={idx} className="edu-dashboard-card card">
-                      <div className="edu-dash-header-row">
-                        <span className="edu-dash-year">{edu.period}</span>
-                        <span className="badge edu-dash-score">{edu.score}</span>
-                      </div>
-                      <h4 className="edu-dash-degree">{edu.degree}</h4>
-                      <p className="edu-dash-inst">{edu.institution}</p>
-                    </div>
-                  ))}
                 </div>
               </div>
             </motion.div>

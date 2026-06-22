@@ -462,6 +462,10 @@
   gap: 16px;
 }
 
+.dashboard-left-column .education-dashboard-grid {
+  grid-template-columns: 1fr;
+}
+
 .edu-dashboard-card {
   padding: 18px;
   background-color: var(--bg-secondary);
@@ -1044,16 +1048,28 @@
 .banner-social-row {
   display: flex;
   gap: 12px;
+  margin-top: 10px;
 }
 
 .social-icon-link {
   color: var(--text-muted);
-  transition: var(--transition-fast);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s ease;
 }
 
 .social-icon-link:hover {
   color: var(--accent);
-  transform: scale(1.1);
+  background-color: var(--accent-light);
+  border-color: rgba(37, 99, 235, 0.2);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Contacts Pill Grid */

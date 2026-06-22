@@ -11,6 +11,18 @@ import { Sparkles, X } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import './App.css';
 
+// Robust helper to retrieve configuration values, handling empty, null, or undefined strings (which can occur in CI/CD builds or localStorage state)
+const getSafeSetting = (localKey, envVal, fallback) => {
+  const local = localStorage.getItem(localKey);
+  if (local && local !== 'null' && local !== 'undefined' && local.trim() !== '') {
+    return local;
+  }
+  if (envVal && envVal !== 'null' && envVal !== 'undefined' && envVal.trim() !== '') {
+    return envVal;
+  }
+  return fallback;
+};
+
 export default function App() {
   const currentYear = new Date().getFullYear();
   const [currentHash, setCurrentHash] = useState(window.location.hash);
@@ -84,9 +96,9 @@ export default function App() {
     const itemId = idleItem.id;
     const file = idleItem.file;
 
-    const cloudName = localStorage.getItem('cloudinary_cloud_name') || import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dno3fddh9';
-    const uploadPreset = localStorage.getItem('cloudinary_upload_preset') || import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'uzxyc123';
-    const geminiApiKey = localStorage.getItem('gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
+    const cloudName = getSafeSetting('cloudinary_cloud_name', import.meta.env.VITE_CLOUDINARY_CLOUD_NAME, 'dno3fddh9');
+    const uploadPreset = getSafeSetting('cloudinary_upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET, 'uzxyc123');
+    const geminiApiKey = getSafeSetting('gemini_api_key', import.meta.env.VITE_GEMINI_API_KEY, '');
 
     updateItemStatus(itemId, { status: 'uploading', progress: 20 });
     let secureUrl = '';
@@ -102,7 +114,8 @@ export default function App() {
       });
 
       if (!response.ok) {
-        throw new Error("Upload failed. Check Cloudinary settings.");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData?.error?.message || "Upload failed. Check Cloudinary settings.");
       }
 
       const data = await response.json();
@@ -196,7 +209,7 @@ export default function App() {
       } catch (e) {
         console.error("Failed to parse projects db:", e);
       }
-      const updatedDb = [...currentDb, projectData];
+      const updatedDb = [projectData, ...currentDb];
       localStorage.setItem('portfolio_projects_db', JSON.stringify(updatedDb));
       
       // Dispatch database update event so other components sync automatically
@@ -222,9 +235,9 @@ export default function App() {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
-    const cloudName = localStorage.getItem('cloudinary_cloud_name') || import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dno3fddh9';
-    const uploadPreset = localStorage.getItem('cloudinary_upload_preset') || import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'uzxyc123';
-    const geminiApiKey = localStorage.getItem('gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
+    const cloudName = getSafeSetting('cloudinary_cloud_name', import.meta.env.VITE_CLOUDINARY_CLOUD_NAME, 'dno3fddh9');
+    const uploadPreset = getSafeSetting('cloudinary_upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET, 'uzxyc123');
+    const geminiApiKey = getSafeSetting('gemini_api_key', import.meta.env.VITE_GEMINI_API_KEY, '');
 
     if (!cloudName || !uploadPreset || !geminiApiKey) {
       alert("Please configure your Cloudinary settings and Gemini API Key in the configurations first!");
