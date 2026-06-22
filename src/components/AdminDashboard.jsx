@@ -251,7 +251,7 @@ export default function AdminDashboard({
         }
       }
 
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -1128,7 +1128,7 @@ export default function AdminDashboard({
                 <>
                   <h2 className="admin-card-title"><Sparkles size={18} /> Bulk AI Portfolio Importer</h2>
                   <p className="admin-card-desc">
-                    Select multiple image files. The system will upload them to Cloudinary and use Gemini 2.5 Flash to automatically detect category, sub-category, title, and tools used for each image, saving them to your portfolio database in real time.
+                    Select multiple image files. The system will upload them to Cloudinary and use Gemini 1.5 Flash to automatically detect category, sub-category, title, and tools used for each image, saving them to your portfolio database in real time.
                   </p>
                   
                   {(!cloudName || !uploadPreset || !geminiApiKey) && (
