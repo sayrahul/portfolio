@@ -1,57 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ProVenture Portfolio</title>
-  <meta name="description" content="ProVenture Digital Agency Portfolio - Creative Work Showcase" />
+  <title>ProVenture | Digital Creative Agency Portfolio</title>
+  <meta name="description" content="ProVenture Digital Agency Portfolio - Premium showcase of Branding, Video Production, Web Design, and Photography. Transforming ideas into visual stories." />
+  <meta name="keywords" content="digital agency, portfolio, branding, video production, web design, photography, Chhatrapati Sambhajinagar" />
+  <meta name="author" content="ProVenture" />
   
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://sayrahul.github.io/portfolio/" />
+  <meta property="og:title" content="ProVenture | Digital Creative Agency Portfolio" />
+  <meta property="og:description" content="Transforming ideas into visual stories. Explore our latest branding, video production, and creative projects." />
+  <meta property="og:image" content="https://proventure.in/assets/og-image.jpg" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://sayrahul.github.io/portfolio/" />
+  <meta property="twitter:title" content="ProVenture | Digital Creative Agency Portfolio" />
+  <meta property="twitter:description" content="Transforming ideas into visual stories. Explore our latest branding, video production, and creative projects." />
+  <meta property="twitter:image" content="https://proventure.in/assets/og-image.jpg" />
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="apple-touch-icon" href="assets/favicon.png" />
+
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
+
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  
-  <!-- CSS -->
-  <link rel="stylesheet" href="css/style.css" />
-  
-  <!-- Smooth Scroll (Lenis) -->
-  <link rel="stylesheet" href="https://unpkg.com/lenis@1.1.13/dist/lenis.css" />
-</head>
-<body class="studio-cursor">
-  <!-- Custom Cursor -->
-  <div class="cursor-dot"></div>
-  <div class="cursor-outline"></div>
 
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/style.css?v=2" />
+</head>
+
+<body>
   <!-- ========== HEADER ========== -->
   <header class="header">
     <div class="container">
       <div class="header-content">
         <!-- Logo -->
         <div class="logo">
-          <img src="assets/logo2.png" alt="ProVenture" />
-          <span class="logo-text">ProVenture</span>
+          <a href="#"><img src="assets/logo2.png" alt="ProVenture Digital Agency" /></a>
         </div>
-        
-        <!-- Search (optional) -->
-        <div class="search-box">
-          <i class="fa-solid fa-search"></i>
+
+        <!-- Search (Desktop) -->
+        <div class="search-box" id="headerSearchBox">
+          <i class="fa-solid fa-magnifying-glass"></i>
           <input type="text" id="searchInput" placeholder="Search projects..." />
+          <button type="button" class="search-clear-btn" id="searchClearBtn" aria-label="Clear search">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
-        
+
         <!-- Actions -->
         <div class="header-actions">
+          <button class="icon-btn search-toggle-btn" id="mobileSearchToggle" aria-label="Toggle search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
           <button class="icon-btn" id="themeToggle" aria-label="Toggle theme">
             <i class="fa-solid fa-moon"></i>
           </button>
-          <a href="https://proventure.in" class="icon-btn" aria-label="Main website">
+          <a href="https://proventure.in" target="_blank" class="icon-btn" aria-label="Main website">
             <i class="fa-solid fa-globe"></i>
           </a>
-          <a href="https://instagram.com/proventure" class="icon-btn" aria-label="Instagram">
+          <a href="https://instagram.com/proventure" target="_blank" class="icon-btn" aria-label="Instagram">
             <i class="fa-brands fa-instagram"></i>
           </a>
+        </div>
+      </div>
+
+      <!-- Mobile Expandable Search Bar -->
+      <div class="mobile-search-expand" id="mobileSearchExpand">
+        <div class="search-box mobile-search-inner">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="mobileSearchInput" placeholder="Search branding, video, web..." />
+          <button type="button" class="search-clear-btn" id="mobileSearchClearBtn" aria-label="Clear search">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
       </div>
     </div>
@@ -61,52 +94,96 @@
   <section class="profile">
     <div class="container">
       <div class="profile-content">
-        <!-- Profile Image -->
-        <div class="profile-image-container">
-          <div class="profile-image" id="parallaxLogo">
-            <img src="assets/logo.png" alt="ProVenture" />
-          </div>
-          <div class="profile-glow"></div>
-        </div>
         
-        <!-- Profile Info -->
-        <div class="profile-info">
-          <div class="profile-header">
-            <h1 class="reveal-text">ProVenture</h1>
-            <a href="https://proventure.in" class="btn-primary magnetic">Visit Website</a>
-          </div>
-          
-          <!-- Stats -->
-          <div class="profile-stats">
-            <div class="stat">
-              <span class="stat-value">1,000+</span>
-              <span class="stat-label">projects</span>
-            </div>
-            <div class="stat">
-              <span class="stat-value">500+</span>
-              <span class="stat-label">clients</span>
-            </div>
-            <div class="stat">
-              <span class="stat-value">10+</span>
-              <span class="stat-label">years</span>
+        <!-- Mobile Top Flex Wrapper (Avatar + Stats) -->
+        <div class="profile-mobile-top-header">
+          <!-- Profile Avatar Column -->
+          <div class="profile-avatar-col">
+            <div class="profile-story-ring">
+              <div class="profile-image">
+                <img src="assets/logo.png" alt="ProVenture" />
+              </div>
             </div>
           </div>
-          
-          <!-- Bio -->
-          <div class="profile-bio">
-            <h2>Digital Creative Agency</h2>
-            <p>🎨 Branding • Video • Web Design • Photography</p>
-            <p>📍 Chhatrapati Sambhajinagar</p>
-            <p>✨ Transforming ideas into visual stories</p>
+
+          <!-- Stats Row for Mobile Header -->
+          <div class="profile-stats-row mobile-inline-stats">
+            <div class="stat-box">
+              <span class="stat-num">1,000+</span>
+              <span class="stat-lbl">projects</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num">500+</span>
+              <span class="stat-lbl">clients</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num">10+</span>
+              <span class="stat-lbl">years</span>
+            </div>
           </div>
-          
-          <!-- Links -->
-          <div class="profile-links">
-            <a href="https://proventure.in" target="_blank">
-              <i class="fa-solid fa-link"></i> proventure.in
+        </div>
+
+        <!-- Profile Details Column -->
+        <div class="profile-details-col">
+          <!-- Row 1: Header Bar (Title, Verified Badge, CTA, Social Icons) -->
+          <div class="profile-header-row">
+            <div class="profile-title-group">
+              <h1>ProVenture</h1>
+              <i class="fa-solid fa-circle-check verified-badge" title="Verified Agency"></i>
+            </div>
+
+            <div class="profile-desktop-actions">
+              <a href="https://proventure.in" target="_blank" class="btn-primary">Visit Website</a>
+              <div class="profile-social-shortcuts">
+                <a href="https://behance.net/proventure" target="_blank" class="icon-social" title="Behance">
+                  <i class="fa-brands fa-behance"></i>
+                </a>
+                <a href="https://instagram.com/proventure" target="_blank" class="icon-social" title="Instagram">
+                  <i class="fa-brands fa-instagram"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 2: Stats Row (Desktop) -->
+          <div class="profile-stats-row desktop-only-stats">
+            <div class="stat-box">
+              <span class="stat-num">1,000+</span>
+              <span class="stat-lbl">projects</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num">500+</span>
+              <span class="stat-lbl">clients</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num">10+</span>
+              <span class="stat-lbl">years</span>
+            </div>
+          </div>
+
+          <!-- Row 3: Bio Block -->
+          <div class="profile-bio-block">
+            <h2 class="bio-subtitle">Digital Creative Agency</h2>
+            <p class="bio-line">🎨 Branding • Video • Web Design • Photography</p>
+            <p class="bio-line">📍 Chhatrapati Sambhajinagar</p>
+            <p class="bio-line">✨ Transforming ideas into visual stories</p>
+            <div class="bio-link-wrapper">
+              <a href="https://proventure.in" target="_blank" class="bio-link">
+                <i class="fa-solid fa-link"></i> proventure.in
+              </a>
+            </div>
+          </div>
+
+          <!-- Mobile Only Action Buttons -->
+          <div class="mobile-action-buttons">
+            <a href="https://proventure.in" target="_blank" class="btn-action primary">
+              <i class="fa-solid fa-globe"></i> Visit Website
             </a>
-            <a href="https://behance.net/proventure" target="_blank">
+            <a href="https://behance.net/proventure" target="_blank" class="btn-action secondary">
               <i class="fa-brands fa-behance"></i> Behance
+            </a>
+            <a href="https://instagram.com/proventure" target="_blank" class="btn-action icon-only" aria-label="Instagram">
+              <i class="fa-brands fa-instagram"></i>
             </a>
           </div>
         </div>
@@ -116,29 +193,29 @@
 
   <!-- ========== FILTER TABS ========== -->
   <section class="filter-section">
-    <div class="container">
-      <div class="filter-tabs">
-        <button class="filter-tab active" data-filter="all">
-          <i class="fa-solid fa-grid"></i>
+    <div class="container filter-container">
+      <div class="filter-tabs" id="filterTabs">
+        <button class="filter-tab active" data-filter="all" aria-label="All Projects">
+          <i class="fa-solid fa-grid-2"></i>
           <span>All</span>
         </button>
-        <button class="filter-tab" data-filter="branding">
+        <button class="filter-tab" data-filter="branding" aria-label="Branding">
           <i class="fa-solid fa-pen-nib"></i>
           <span>Branding</span>
         </button>
-        <button class="filter-tab" data-filter="video">
-          <i class="fa-solid fa-video"></i>
+        <button class="filter-tab" data-filter="video" aria-label="Video Work">
+          <i class="fa-solid fa-film"></i>
           <span>Video</span>
         </button>
-        <button class="filter-tab" data-filter="web">
+        <button class="filter-tab" data-filter="web" aria-label="Web Design">
           <i class="fa-solid fa-code"></i>
           <span>Web</span>
         </button>
-        <button class="filter-tab" data-filter="photo">
+        <button class="filter-tab" data-filter="photo" aria-label="Photography">
           <i class="fa-solid fa-camera"></i>
           <span>Photo</span>
         </button>
-        <button class="filter-tab" data-filter="social">
+        <button class="filter-tab" data-filter="social" aria-label="Social Media">
           <i class="fa-solid fa-hashtag"></i>
           <span>Social</span>
         </button>
@@ -152,13 +229,11 @@
       <div class="portfolio-grid" id="portfolioGrid">
         <!-- Items injected by JS -->
       </div>
-      
-      <!-- Load More -->
-      <div class="load-more">
-        <button class="btn-load" id="loadMoreBtn">
-          <i class="fa-solid fa-plus"></i>
-          Load More
-        </button>
+
+      <!-- Infinite Scroll Loader -->
+      <div id="infiniteSentinel"></div>
+      <div id="scrollLoader" class="scroll-loader">
+        <i class="fa-solid fa-circle-notch fa-spin"></i>
       </div>
     </div>
   </section>
@@ -168,23 +243,23 @@
     <div class="lightbox-overlay" id="lightboxOverlay"></div>
     <div class="lightbox-content">
       <!-- Close -->
-      <button class="lightbox-close" id="lightboxClose">
+      <button class="lightbox-close" id="lightboxClose" aria-label="Close modal">
         <i class="fa-solid fa-xmark"></i>
       </button>
-      
+
       <!-- Navigation -->
-      <button class="lightbox-nav lightbox-prev" id="lightboxPrev">
+      <button class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="Previous project">
         <i class="fa-solid fa-chevron-left"></i>
       </button>
-      <button class="lightbox-nav lightbox-next" id="lightboxNext">
+      <button class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="Next project">
         <i class="fa-solid fa-chevron-right"></i>
       </button>
-      
+
       <!-- Main Content -->
       <div class="lightbox-main">
         <!-- Media -->
         <div class="lightbox-media" id="lightboxMedia"></div>
-        
+
         <!-- Sidebar Info -->
         <div class="lightbox-sidebar">
           <!-- Header -->
@@ -192,9 +267,10 @@
             <div class="lightbox-profile">
               <img src="assets/logo.png" alt="ProVenture" />
               <span>ProVenture</span>
+              <i class="fa-solid fa-circle-check verified-badge"></i>
             </div>
           </div>
-          
+
           <!-- Info -->
           <div class="lightbox-info" id="lightboxInfo">
             <h3 id="lightboxTitle"></h3>
@@ -204,17 +280,17 @@
               <span class="lightbox-type" id="lightboxType"></span>
             </div>
           </div>
-          
+
           <!-- Actions -->
           <div class="lightbox-actions">
-            <button class="action-btn">
+            <button class="action-btn" aria-label="Like project">
               <i class="fa-regular fa-heart"></i>
             </button>
-            <button class="action-btn">
+            <button class="action-btn" aria-label="Save project">
               <i class="fa-regular fa-bookmark"></i>
             </button>
-            <button class="action-btn">
-              <i class="fa-regular fa-share-from-square"></i>
+            <button class="action-btn" aria-label="Share project">
+              <i class="fa-regular fa-paper-plane"></i>
             </button>
           </div>
         </div>
@@ -227,21 +303,41 @@
     <div class="container">
       <div class="footer-content">
         <div class="footer-links">
-          <a href="https://proventure.in">About</a>
-          <a href="https://proventure.in">Services</a>
-          <a href="https://proventure.in">Contact</a>
-          <a href="https://instagram.com/proventure">Instagram</a>
-          <a href="https://behance.net/proventure">Behance</a>
+          <a href="https://proventure.in" target="_blank">About</a>
+          <a href="https://proventure.in" target="_blank">Services</a>
+          <a href="https://proventure.in" target="_blank">Contact</a>
+          <a href="https://instagram.com/proventure" target="_blank">Instagram</a>
+          <a href="https://behance.net/proventure" target="_blank">Behance</a>
         </div>
         <p>&copy; 2025 ProVenture Digital Agency. All rights reserved.</p>
       </div>
     </div>
   </footer>
 
+  <!-- ========== MOBILE BOTTOM NAV BAR ========== -->
+  <nav class="mobile-bottom-bar">
+    <a href="#" class="bottom-nav-item active" id="mobileHomeBtn" aria-label="Feed">
+      <i class="fa-solid fa-house"></i>
+      <span class="bottom-nav-label">Home</span>
+    </a>
+    <button class="bottom-nav-item" id="mobileSearchNavBtn" aria-label="Search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <span class="bottom-nav-label">Search</span>
+    </button>
+    <a href="https://proventure.in" target="_blank" class="bottom-nav-item" aria-label="Main Website">
+      <i class="fa-solid fa-globe"></i>
+      <span class="bottom-nav-label">Website</span>
+    </a>
+    <button class="bottom-nav-item" id="mobileThemeToggleBtn" aria-label="Toggle Theme">
+      <i class="fa-solid fa-moon"></i>
+      <span class="bottom-nav-label">Theme</span>
+    </button>
+  </nav>
+
   <!-- Scripts -->
-  <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
   <script src="data/projects.js"></script>
   <script src="js/apps-script-loader.js"></script>
   <script src="js/main.js"></script>
 </body>
+
 </html>

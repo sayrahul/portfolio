@@ -10,7 +10,9 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzrWVebG5mhEnoS
 // Fetch projects from Google Sheets via Apps Script
 async function loadFromGoogleSheets() {
   const grid = document.getElementById('portfolioGrid');
-  if (grid) grid.innerHTML = '<div class="loading-status">🔄 Connecting to Google Photos...</div>';
+  if (grid) {
+    grid.innerHTML = Array(6).fill('<div class="skeleton-card"><div class="skeleton-pulse"></div></div>').join('');
+  }
 
   try {
     console.log('🔄 Fetching from Apps Script:', APPS_SCRIPT_URL);

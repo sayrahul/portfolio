@@ -1,61 +1,58 @@
 // ========================================
 // PORTFOLIO PROJECTS DATA
-// Auto-populated from Google Photos
+// Default dataset / Fallback from Google Photos
 // ========================================
 
-// Your Google Photos Album
 const GOOGLE_PHOTOS_ALBUM = 'https://photos.app.goo.gl/PKbE1PDMfGqYrhsw8';
 
-// Sample projects with direct image URLs
-// Replace these with your actual image URLs from Imgur or other host
 const portfolioProjects = [
   // BRANDING PROJECTS
   {
     title: 'Brand Identity Design',
-    description: 'Complete brand identity package',
+    description: 'Complete brand identity & visual package',
     category: 'branding',
     type: 'image',
-    url: 'https://lh3.googleusercontent.com/d/1PKbE1PDMfGqYrhsw8' // Replace with actual URL
+    url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=80'
   },
   {
     title: 'Logo Design Collection',
-    description: 'Modern logo designs',
+    description: 'Modern minimalist logo design exploration',
     category: 'branding',
     type: 'image',
-    url: 'https://via.placeholder.com/600x600/00AEEF/ffffff?text=Logo+Design'
+    url: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=800&auto=format&fit=crop&q=80'
   },
   {
     title: 'Corporate Branding',
-    description: 'Full corporate identity',
+    description: 'Full corporate identity systems',
     category: 'branding',
     type: 'image',
-    url: 'https://via.placeholder.com/600x600/1B3A5C/ffffff?text=Corporate'
+    url: 'https://images.unsplash.com/photo-1542744094-3a31727223ec?w=800&auto=format&fit=crop&q=80'
   },
   {
     title: 'Packaging Design',
-    description: 'Product packaging design',
+    description: 'Eco-friendly product packaging design',
     category: 'branding',
     type: 'image',
-    url: 'https://via.placeholder.com/600x600/00AEEF/ffffff?text=Packaging'
+    url: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=800&auto=format&fit=crop&q=80'
   },
   {
     title: 'Brand Guidelines',
-    description: 'Comprehensive brand book',
+    description: 'Comprehensive brand stylebook & guidelines',
     category: 'branding',
     type: 'image',
-    url: 'https://via.placeholder.com/600x600/1B3A5C/ffffff?text=Guidelines'
+    url: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=80'
   },
   
   // VIDEO PROJECTS
   {
-    title: 'Corporate Video',
+    title: 'Corporate Commercial',
     description: 'Professional corporate video production',
     category: 'video',
     type: 'video',
     url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
   },
   {
-    title: 'Product Showcase',
+    title: 'Product Showcase Reel',
     description: 'Dynamic product showcase video',
     category: 'video',
     type: 'video',
@@ -63,21 +60,21 @@ const portfolioProjects = [
   },
   {
     title: 'Social Media Reel',
-    description: 'Engaging social media content',
+    description: 'Engaging vertical video campaign',
     category: 'video',
     type: 'video',
     url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
   },
   {
-    title: 'Motion Graphics',
-    description: 'Animated motion graphics',
+    title: 'Motion Graphics Animation',
+    description: '2D & 3D animated motion graphics',
     category: 'video',
     type: 'video',
     url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4'
   },
   {
     title: 'Explainer Video',
-    description: 'Animated explainer video',
+    description: 'High-converting explainer animation',
     category: 'video',
     type: 'video',
     url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4'
@@ -85,129 +82,112 @@ const portfolioProjects = [
   
   // WEB DESIGN PROJECTS
   {
-    title: 'E-commerce Website',
-    description: 'Modern e-commerce platform design',
+    title: 'E-commerce Platform',
+    description: 'Modern e-commerce store UI/UX',
     category: 'web',
     type: 'image',
-    url: 'https://via.placeholder.com/600x600/00AEEF/ffffff?text=E-commerce'
+    url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=80'
   },
   {
-    title: 'Corporate Website',
-    description: 'Professional corporate website',
+    title: 'Corporate Website UI',
+    description: 'Professional corporate web design',
     category: 'web',
     type: 'image',
-    url: 'https://via.placeholder.com/600x600/1B3A5C/ffffff?text=Corporate+Web'
+    url: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&auto=format&fit=crop&q=80'
   },
   {
-    title: 'Portfolio Website',
-    description: 'Creative portfolio website design',
+    title: 'Portfolio Showcase',
+    description: 'Creative agency portfolio design',
     category: 'web',
     type: 'image',
-    url: 'https://via.placeholder.com/600x600/00AEEF/ffffff?text=Portfolio'
+    url: 'https://images.unsplash.com/photo-1517292987719-0369a794ec0f?w=800&auto=format&fit=crop&q=80'
   },
   {
-    title: 'Landing Page Design',
-    description: 'High-converting landing page',
+    title: 'Landing Page System',
+    description: 'High-converting SaaS landing page',
     category: 'web',
     type: 'image',
-    url: 'https://via.placeholder.com/600x600/1B3A5C/ffffff?text=Landing+Page'
+    url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=80'
   },
   {
-    title: 'Mobile App UI',
-    description: 'Mobile app interface design',
+    title: 'Mobile App Interface',
+    description: 'iOS & Android mobile app UI design',
     category: 'web',
     type: 'image',
-    url: 'https://via.placeholder.com/600x600/00AEEF/ffffff?text=Mobile+App'
+    url: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&auto=format&fit=crop&q=80'
   },
   
   // PHOTOGRAPHY PROJECTS
   {
     title: 'Product Photography',
-    description: 'Professional product photography',
+    description: 'Professional studio product shoot',
     category: 'photo',
     type: 'image',
-    url: 'https://via.placeholder.com/600x600/1B3A5C/ffffff?text=Product+Photo'
+    url: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80'
   },
   {
-    title: 'Corporate Event',
-    description: 'Corporate event photography',
+    title: 'Corporate Event Shoot',
+    description: 'Corporate annual event photography',
     category: 'photo',
     type: 'image',
-    url: 'https://via.placeholder.com/600x600/00AEEF/ffffff?text=Event'
+    url: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=800&auto=format&fit=crop&q=80'
   },
   {
     title: 'Brand Photography',
-    description: 'Brand lifestyle photography',
+    description: 'Lifestyle & commercial brand shoot',
     category: 'photo',
     type: 'image',
-    url: 'https://via.placeholder.com/600x600/1B3A5C/ffffff?text=Brand+Photo'
+    url: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&auto=format&fit=crop&q=80'
   },
   {
-    title: 'Portrait Photography',
-    description: 'Professional portrait session',
+    title: 'Executive Portraits',
+    description: 'Professional headshots & portraits',
     category: 'photo',
     type: 'image',
-    url: 'https://via.placeholder.com/600x600/00AEEF/ffffff?text=Portrait'
+    url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&auto=format&fit=crop&q=80'
   },
   {
     title: 'Event Coverage',
-    description: 'Complete event photography',
+    description: 'Full event documentation photography',
     category: 'photo',
     type: 'image',
-    url: 'https://via.placeholder.com/600x600/1B3A5C/ffffff?text=Event+Coverage'
+    url: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop&q=80'
   },
   
   // SOCIAL MEDIA PROJECTS
   {
     title: 'Instagram Campaign',
-    description: 'Social media campaign design',
+    description: 'Social media campaign graphics',
     category: 'social',
     type: 'image',
-    url: 'https://via.placeholder.com/600x600/00AEEF/ffffff?text=Instagram'
+    url: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&auto=format&fit=crop&q=80'
   },
   {
-    title: 'Social Media Graphics',
-    description: 'Engaging social media graphics',
+    title: 'Social Media Creatives',
+    description: 'High-engagement social post graphics',
     category: 'social',
     type: 'image',
-    url: 'https://via.placeholder.com/600x600/1B3A5C/ffffff?text=Social+Graphics'
+    url: 'https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=800&auto=format&fit=crop&q=80'
   },
   {
     title: 'Content Strategy',
-    description: 'Complete social media content',
+    description: 'Full monthly content calendar & posts',
     category: 'social',
     type: 'image',
-    url: 'https://via.placeholder.com/600x600/00AEEF/ffffff?text=Content'
+    url: 'https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=800&auto=format&fit=crop&q=80'
   },
   {
-    title: 'Facebook Ads',
-    description: 'High-performing ad creatives',
+    title: 'Facebook Ads Suite',
+    description: 'High-converting ad campaign graphics',
     category: 'social',
     type: 'image',
-    url: 'https://via.placeholder.com/600x600/1B3A5C/ffffff?text=Facebook+Ads'
+    url: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=80'
   },
   {
-    title: 'LinkedIn Content',
-    description: 'Professional LinkedIn graphics',
+    title: 'LinkedIn Graphics',
+    description: 'B2B LinkedIn post & carousel graphics',
     category: 'social',
     type: 'image',
-    url: 'https://via.placeholder.com/600x600/00AEEF/ffffff?text=LinkedIn'
-  },
+    url: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&auto=format&fit=crop&q=80'
+  }
 ];
-
-// ========================================
-// HOW TO ADD YOUR IMAGES:
-// ========================================
-// 
-// EASIEST METHOD: Use Imgur
-// 
-// 1. Download images from Google Photos
-// 2. Go to imgur.com
-// 3. Upload all images
-// 4. Right-click each image → "Copy image address"
-// 5. Replace the placeholder URLs above
-//
-// Example:
-// url: 'https://i.imgur.com/ABC123.jpg'
-//
-// ========================================

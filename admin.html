@@ -1,22 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ProVenture | Admin Dashboard</title>
-  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="apple-touch-icon" href="assets/favicon.png" />
+
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
+
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  
+
   <!-- CSS -->
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/admin.css" />
 </head>
+
 <body class="admin-body">
 
   <!-- ========== LOGIN OVERLAY ========== -->
@@ -27,7 +34,7 @@
       <p>Enter password to manage your portfolio</p>
       <div class="input-group">
         <input type="password" id="adminPassword" placeholder="Password" />
-        <button id="loginBtn" class="btn-primary magnetic">Login</button>
+        <button id="loginBtn" class="btn-primary">Login</button>
       </div>
       <p id="loginError" class="error-text"></p>
     </div>
@@ -35,14 +42,14 @@
 
   <!-- ========== DASHBOARD LAYOUT ========== -->
   <div class="dashboard-container" id="dashboardUI" style="display: none;">
-    
+
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-header">
         <img src="assets/logo2.png" alt="ProVenture" />
         <span class="logo-text">ProVenture</span>
       </div>
-      
+
       <nav class="sidebar-nav">
         <button class="nav-item active" data-tab="projects">
           <i class="fa-solid fa-grid-2"></i>
@@ -57,7 +64,7 @@
           <span>Analytics</span>
         </button>
       </nav>
-      
+
       <div class="sidebar-footer">
         <button id="logoutBtn" class="logout-btn">
           <i class="fa-solid fa-right-from-bracket"></i>
@@ -113,6 +120,33 @@
         </div>
       </section>
 
+      <!-- Bulk Actions Bar (Hidden by default) -->
+      <div id="bulkActionsBar" class="bulk-actions-bar">
+        <div class="bulk-info">
+          <span id="selectedCount">0</span> items selected
+        </div>
+        <div class="bulk-tools">
+          <select id="bulkCategory">
+            <option value="">Change Category...</option>
+            <option value="branding">Branding</option>
+            <option value="video">Video</option>
+            <option value="web">Web Design</option>
+            <option value="photo">Photography</option>
+            <option value="social">Social Media</option>
+          </select>
+          <button id="bulkHideBtn" class="btn-bulk">
+            <i class="fa-solid fa-eye-slash"></i> Hide
+          </button>
+          <button id="bulkShowBtn" class="btn-bulk">
+            <i class="fa-solid fa-eye"></i> Show
+          </button>
+          <button id="bulkDeleteBtn" class="btn-bulk danger">
+            <i class="fa-solid fa-trash"></i> Delete
+          </button>
+          <button id="clearSelectionBtn" class="btn-bulk-secondary">Cancel</button>
+        </div>
+      </div>
+
       <!-- Settings Tab -->
       <section id="settingsTab" class="tab-content">
         <div class="settings-card">
@@ -139,4 +173,5 @@
   <script src="js/apps-script-loader.js"></script>
   <script src="js/admin.js"></script>
 </body>
+
 </html>
