@@ -38,7 +38,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
   <!-- CSS -->
-  <link rel="stylesheet" href="css/style.css?v=2" />
+  <link rel="stylesheet" href="css/style.css?v=3" />
 </head>
 
 <body>
@@ -242,35 +242,28 @@
   <div class="lightbox" id="lightbox">
     <div class="lightbox-overlay" id="lightboxOverlay"></div>
     <div class="lightbox-content">
-      <!-- Close -->
-      <button class="lightbox-close" id="lightboxClose" aria-label="Close modal">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-
-      <!-- Navigation -->
-      <button class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="Previous project">
-        <i class="fa-solid fa-chevron-left"></i>
-      </button>
-      <button class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="Next project">
-        <i class="fa-solid fa-chevron-right"></i>
-      </button>
-
       <!-- Main Content -->
       <div class="lightbox-main">
-        <!-- Media -->
-        <div class="lightbox-media" id="lightboxMedia"></div>
+        <!-- Media Container (Controls overlay image directly) -->
+        <div class="lightbox-media">
+          <div class="lightbox-media-render" id="lightboxMedia"></div>
+
+          <!-- Close Button on Image -->
+          <button class="lightbox-close" id="lightboxClose" aria-label="Close modal">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+
+          <!-- Navigation Controls on Image -->
+          <button class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="Previous project">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <button class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="Next project">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
 
         <!-- Sidebar Info -->
         <div class="lightbox-sidebar">
-          <!-- Header -->
-          <div class="lightbox-header">
-            <div class="lightbox-profile">
-              <img src="assets/logo.png" alt="ProVenture" />
-              <span>ProVenture</span>
-              <i class="fa-solid fa-circle-check verified-badge"></i>
-            </div>
-          </div>
-
           <!-- Info -->
           <div class="lightbox-info" id="lightboxInfo">
             <h3 id="lightboxTitle"></h3>
