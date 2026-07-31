@@ -265,17 +265,29 @@ function updateLightbox() {
   if (!project) return;
 
   lightboxMedia.innerHTML = '';
+  let rawUrl = project.url || '';
+  // Ensure CDN image URLs serve full uncropped originals
+  if (rawUrl.includes('fit=crop')) {
+    rawUrl = rawUrl.replace('fit=crop', 'fit=max');
+  }
+
   if (project.type === 'video') {
     const video = document.createElement('video');
-    video.src = project.url || '';
+    video.src = rawUrl;
     video.controls = true;
     video.autoplay = true;
     video.loop = true;
+    video.style.maxHeight = '100%';
+    video.style.maxWidth = '100%';
+    video.style.objectFit = 'contain';
     lightboxMedia.appendChild(video);
   } else {
     const img = document.createElement('img');
-    img.src = project.url || '';
+    img.src = rawUrl;
     img.alt = project.title || 'Project image';
+    img.style.maxHeight = '100%';
+    img.style.maxWidth = '100%';
+    img.style.objectFit = 'contain';
     lightboxMedia.appendChild(img);
   }
   

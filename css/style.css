@@ -481,7 +481,10 @@ button {
 .portfolio-item video {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  background: var(--bg-tertiary);
+  padding: 4px;
+  box-sizing: border-box;
 }
 
 .portfolio-overlay {
@@ -581,6 +584,14 @@ button {
   border: 1px solid var(--border-color);
 }
 
+.lightbox-main {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
 .lightbox-media {
   position: relative;
   background: #000000;
@@ -590,6 +601,7 @@ button {
   overflow: hidden;
   width: 100%;
   height: 100%;
+  min-height: 0;
 }
 
 .lightbox-media-render {
@@ -598,13 +610,18 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
 }
 
 .lightbox-media-render img,
 .lightbox-media-render video {
   max-width: 100%;
   max-height: 100%;
-  object-fit: contain;
+  width: auto;
+  height: auto;
+  object-fit: contain !important;
+  display: block;
 }
 
 .lightbox-close {
@@ -1074,32 +1091,58 @@ button {
 
   /* Mobile Lightbox Modal */
   .lightbox-content {
-    width: 100vw;
-    height: 100vh;
-    max-width: 100vw;
-    max-height: 100vh;
-    border-radius: 0;
-    border: none;
-    display: flex;
-    flex-direction: column;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    border: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    margin: 0 !important;
   }
 
   .lightbox-main {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    grid-template-columns: none !important;
   }
 
   .lightbox-media {
-    flex: 1;
-    max-height: 60vh;
-    width: 100%;
-    background: #000000;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    background: #000000 !important;
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+  }
+
+  .lightbox-media-render {
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 8px !important;
+    box-sizing: border-box !important;
+  }
+
+  .lightbox-media-render img,
+  .lightbox-media-render video {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+    object-position: center !important;
+    display: block !important;
+    margin: auto !important;
   }
 
   .lightbox-close {
@@ -1114,12 +1157,13 @@ button {
   }
 
   .lightbox-sidebar {
-    flex: 1;
+    flex: 0 0 auto;
+    max-height: 35vh;
     display: flex;
     flex-direction: column;
     border-left: none;
     border-top: 1px solid var(--border-color);
-    overflow: hidden;
+    overflow-y: auto;
     background: var(--bg-primary);
   }
 
